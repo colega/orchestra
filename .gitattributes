@@ -1,0 +1,3 @@
+secretdir/**/*.env filter=git-crypt diff=git-crypt
+secretdir/**/*.yml filter=git-crypt diff=git-crypt
+secretdir/**/*.yaml filter=git-crypt diff=git-crypt
