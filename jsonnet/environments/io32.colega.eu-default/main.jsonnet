@@ -1,6 +1,5 @@
 local k = import 'github.com/grafana/jsonnet-libs/ksonnet-util/kausal.libsonnet';
 local grafana = import 'grafana/grafana.libsonnet';
-local oauth2_proxy = import 'oauth2-proxy.libsonnet';
 local prometheus = import 'prometheus-ksonnet/prometheus-ksonnet.libsonnet';
 
 {
@@ -56,26 +55,4 @@ local prometheus = import 'prometheus-ksonnet/prometheus-ksonnet.libsonnet';
         + path.backend.withServicePort(9090),
       ])
     ),
-
-
-  traefik_oauth2_ingress:
-    ingress.new('traefik-oauth2-ingress') +
-    ingress.mixin.metadata.withNamespace($._config.namespace) +
-    ingress.mixin.spec.withRules(
-      rule.withHost('traefik.grafana.me') +
-      rule.http.withPaths([
-        path.withPath('/')
-        + path.backend.withServiceName('oauth2-traefik')
-        + path.backend.withServicePort(4180),
-      ])
-    ),
-
-  oauth2_traefik: oauth2_proxy.new(
-    namespace=$._config.namespace,
-    redirect='http://traefik.grafana.me/oauth2/callback',
-    upstream='http://traefik.kube-system.svc.cluster.local:9000/',
-    name='oauth2-traefik',
-    secret_name='oauth2-traefik',
-    emails=importstr 'email.txt',
-  ),
 }

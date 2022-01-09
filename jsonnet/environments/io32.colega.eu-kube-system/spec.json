@@ -7,7 +7,7 @@
   },
   "spec": {
     "apiServer": "https://io32.colega.eu:6443",
-    "namespace": "default",
+    "namespace": "kube-system",
     "resourceDefaults": {},
     "expectVersions": {},
     "injectLabels": true
