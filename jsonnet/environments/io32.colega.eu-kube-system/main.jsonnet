@@ -11,7 +11,7 @@ local traefik_helmchartconfig = import 'traefik-helmchartconfig.jsonnet';
   local ingress = k.networking.v1beta1.ingress,
   local rule = k.networking.v1beta1.ingressRule,
   local path = k.networking.v1beta1.httpIngressPath,
-
+/*
   traefik_oauth2_ingress:
     ingress.new('traefik-oauth2-ingress') +
     ingress.mixin.metadata.withNamespace($._config.namespace) +
@@ -32,6 +32,6 @@ local traefik_helmchartconfig = import 'traefik-helmchartconfig.jsonnet';
     secret_name='oauth2-traefik',
     emails=importstr 'email.txt',
   ),
-
   traefik_helmchartconfig: traefik_helmchartconfig,
+  */
 }

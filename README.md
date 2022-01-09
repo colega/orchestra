@@ -1,6 +1,10 @@
 # k3s
 
 Install: https://rancher.com/docs/k3s/latest/en/quick-start/
+But with no traefik: https://github.com/k3s-io/k3s/issues/1160#issuecomment-922000143
+
+`curl -sfL https://get.k3s.io | K3S_KUBECONFIG_MODE="644" INSTALL_K3S_EXEC="server --disable=traefik" sh -
+
 
 Kubeconfig: /etc/rancher/k3s/k3s.yaml
 
@@ -20,5 +24,4 @@ mv .kube/config_k3s_new .kube/config
 
 # Custom traefik
 
-- https://github.com/k3s-io/k3s/issues/1160
 - https://blog.zachinachshon.com/traefik-ingress/
