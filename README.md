@@ -18,3 +18,7 @@ mv .kube/config ./kube/config.bak
 mv .kube/config_k3s_new .kube/config
 ```
 
+# Custom traefik
+
+- https://github.com/k3s-io/k3s/issues/1160
+- https://blog.zachinachshon.com/traefik-ingress/
