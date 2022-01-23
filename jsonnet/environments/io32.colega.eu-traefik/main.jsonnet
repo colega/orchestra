@@ -13,18 +13,44 @@ local traefik = import 'traefik/traefik.libsonnet';
   local rule = k.networking.v1beta1.ingressRule,
   local path = k.networking.v1beta1.httpIngressPath,
 
-  /*traefik_ingress:
-    ingress.new('traefik-ingress') +
-    ingress.mixin.metadata.withNamespace($._config.namespace) +
-    ingress.mixin.spec.withRules(
-      rule.withHost('traefik.io32.colega.eu') +
-      rule.http.withPaths([
-        path.withPath('/')
-        //+ path.backend.resource.withName('api@internal')
-        //+ path.backend.resource.withKind('TraefikService')
-        + path.backend.withServiceName('traefik')
-        + path.backend.withServicePort(9000),
-      ])
-    ),
-    */
+  traefik_ingress: {
+    apiVersion: 'traefik.containo.us/v1alpha1',
+    kind: 'IngressRoute',
+    metadata: {
+        name: 'external-traefik-dashboard',
+        namespace: 'traefik',
+    },
+    spec: {
+      entryPoints: ['websecure'],
+      routes: [
+        {
+          kind: 'Rule',
+          match: 'Host(`traefik.io32.colega.eu`)',
+          services: [
+            { kind: 'TraefikService', name: 'api@internal' },
+          ],
+          middlewares: [
+            { name: 'basic-auth' }, // this will try to find <namespace>-<name>@kubernetescrd
+          ],
+        },
+      ],
+      tls: {
+        certResolver: 'le',
+      },
+    },
+  },
+
+  traefik_basic_auth_middleware: {
+    apiVersion: 'traefik.containo.us/v1alpha1',
+    kind: 'Middleware',
+
+    metadata: {
+      name: 'basic-auth',
+    },
+    spec: {
+      basicAuth: {
+        secret: 'basic-auth',
+      },
+    },
+  },
 }
