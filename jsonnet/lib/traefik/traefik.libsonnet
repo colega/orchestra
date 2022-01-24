@@ -7,7 +7,7 @@ local helm = tanka.helm.new(std.thisFile);
     values: {
       dashboard: { enabled: true },
       rbac: { enabled: true },
-      nodeSelector: { 'node-type': 'master' },
+      nodeSelector: { 'node-role.kubernetes.io/master': 'true' },
       additionalArguments: [
         '--api.dashboard=true',
         '--log.level=DEBUG',

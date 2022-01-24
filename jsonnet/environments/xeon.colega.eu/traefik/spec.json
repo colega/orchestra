@@ -1,0 +1,15 @@
+{
+  "apiVersion": "tanka.dev/v1alpha1",
+  "kind": "Environment",
+  "metadata": {
+    "name": "environments/traefik",
+    "namespace": "environments/traefik/main.jsonnet"
+  },
+  "spec": {
+    "apiServer": "https://xeon.colega.eu:6443",
+    "namespace": "traefik",
+    "resourceDefaults": {},
+    "expectVersions": {},
+    "injectLabels": true
+  }
+}
