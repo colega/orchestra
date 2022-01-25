@@ -34,7 +34,7 @@ local prometheus = import 'prometheus-ksonnet/prometheus-ksonnet.libsonnet';
             { kind: 'Service', name: 'grafana', port: 'http' },
           ],
           middlewares: [
-            { name: 'basic-auth' },
+            { name: 'basic-auth-noheader' },
           ],
         },
       ],
@@ -77,6 +77,22 @@ local prometheus = import 'prometheus-ksonnet/prometheus-ksonnet.libsonnet';
     spec: {
       basicAuth: {
         secret: 'basic-auth',
+      },
+    },
+  },
+
+  traefik_basic_auth_noheader_middleware: {
+    apiVersion: 'traefik.containo.us/v1alpha1',
+    kind: 'Middleware',
+
+    metadata: {
+      name: 'basic-auth-noheader',
+    },
+
+    spec: {
+      basicAuth: {
+        secret: 'basic-auth',
+        removeHeader: true,
       },
     },
   },
