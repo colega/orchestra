@@ -9,10 +9,6 @@ local traefik = import 'traefik/traefik.libsonnet';
 
   traefik: traefik,
 
-  local ingress = k.networking.v1beta1.ingress,
-  local rule = k.networking.v1beta1.ingressRule,
-  local path = k.networking.v1beta1.httpIngressPath,
-
   traefik_ingress: {
     apiVersion: 'traefik.containo.us/v1alpha1',
     kind: 'IngressRoute',
