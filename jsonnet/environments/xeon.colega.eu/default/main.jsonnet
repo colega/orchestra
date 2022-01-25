@@ -38,6 +38,7 @@ local prometheus = import 'prometheus-ksonnet/prometheus-ksonnet.libsonnet';
           ],
         },
       ],
+      tls: { options: { name: "" } }, // Otherwise doesn't work, see https://community.traefik.io/t/ingressroute-without-secretname-field-yields-404-response/1006
     },
   },
 
@@ -54,13 +55,14 @@ local prometheus = import 'prometheus-ksonnet/prometheus-ksonnet.libsonnet';
           kind: 'Rule',
           match: 'Host(`prometheus.grafana.me`)',
           services: [
-            { kind: 'Service', name: 'grafana', port: 9090 },
+            { kind: 'Service', name: 'prometheus', port: 9090 },
           ],
           middlewares: [
             { name: 'basic-auth' },
           ],
         },
       ],
+      tls: { options: { name: "" } }, // Otherwise doesn't work, see https://community.traefik.io/t/ingressroute-without-secretname-field-yields-404-response/1006
     },
   },
 

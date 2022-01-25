@@ -30,10 +30,8 @@ local traefik = import 'traefik/traefik.libsonnet';
           ],
         },
       ],
-      tls: {
-        certResolver: 'le',
-      },
     },
+      tls: { options: { name: "" } }, // Otherwise doesn't work, see https://community.traefik.io/t/ingressroute-without-secretname-field-yields-404-response/1006
   },
 
   traefik_basic_auth_middleware: {
