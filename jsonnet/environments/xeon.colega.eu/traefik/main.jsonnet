@@ -13,8 +13,8 @@ local traefik = import 'traefik/traefik.libsonnet';
     apiVersion: 'traefik.containo.us/v1alpha1',
     kind: 'IngressRoute',
     metadata: {
-        name: 'external-traefik-dashboard',
-        namespace: 'traefik',
+      name: 'external-traefik-dashboard',
+      namespace: 'traefik',
     },
     spec: {
       entryPoints: ['websecure'],
@@ -26,12 +26,12 @@ local traefik = import 'traefik/traefik.libsonnet';
             { kind: 'TraefikService', name: 'api@internal' },
           ],
           middlewares: [
-            { name: 'basic-auth' }, // this will try to find <namespace>-<name>@kubernetescrd
+            { name: 'basic-auth' },  // this will try to find <namespace>-<name>@kubernetescrd
           ],
         },
       ],
     },
-      tls: { options: { name: "" } }, // Otherwise doesn't work, see https://community.traefik.io/t/ingressroute-without-secretname-field-yields-404-response/1006
+    tls: { options: { name: '' } },  // Otherwise doesn't work, see https://community.traefik.io/t/ingressroute-without-secretname-field-yields-404-response/1006
   },
 
   traefik_basic_auth_middleware: {
