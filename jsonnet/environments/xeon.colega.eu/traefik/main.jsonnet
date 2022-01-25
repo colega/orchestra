@@ -51,7 +51,7 @@ local traefik = import 'traefik/traefik.libsonnet';
             { kind: 'TraefikService', name: 'api@internal' },  // TODO point to something dumb?
           ],
           middlewares: [
-            { name: 'redirect-https' }
+            { name: 'redirect-https' },
             { name: 'basic-auth' },  // TODO remove once not pointing to real service
           ],
         },
