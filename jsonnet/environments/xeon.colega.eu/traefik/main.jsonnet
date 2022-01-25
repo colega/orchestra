@@ -9,11 +9,11 @@ local traefik = import 'traefik/traefik.libsonnet';
 
   traefik: traefik,
 
-  traefik_ingress: {
+  traefik_https_ingress: {
     apiVersion: 'traefik.containo.us/v1alpha1',
     kind: 'IngressRoute',
     metadata: {
-      name: 'external-traefik-dashboard',
+      name: 'traefik-dashboard-https',
       namespace: 'traefik',
     },
     spec: {
@@ -30,8 +30,33 @@ local traefik = import 'traefik/traefik.libsonnet';
           ],
         },
       ],
+      tls: { options: { name: '' } },  // Otherwise doesn't work, see https://community.traefik.io/t/ingressroute-without-secretname-field-yields-404-response/1006
     },
-    tls: { options: { name: '' } },  // Otherwise doesn't work, see https://community.traefik.io/t/ingressroute-without-secretname-field-yields-404-response/1006
+  },
+
+  traefik_http_ingress: {
+    apiVersion: 'traefik.containo.us/v1alpha1',
+    kind: 'IngressRoute',
+    metadata: {
+      name: 'traefik-dashboard-http',
+      namespace: 'traefik',
+    },
+    spec: {
+      entryPoints: ['web'],
+      routes: [
+        {
+          kind: 'Rule',
+          match: 'Host(`traefik.xeon.colega.eu`)',
+          services: [
+            { kind: 'TraefikService', name: 'api@internal' },  // TODO point to something dumb?
+          ],
+          middlewares: [
+            { name: 'redirect-https' }
+            { name: 'basic-auth' },  // TODO remove once not pointing to real service
+          ],
+        },
+      ],
+    },
   },
 
   traefik_basic_auth_middleware: {
@@ -44,6 +69,23 @@ local traefik = import 'traefik/traefik.libsonnet';
     spec: {
       basicAuth: {
         secret: 'basic-auth',
+      },
+    },
+  },
+
+
+  traefik_redirect_https_middleware: {
+    apiVersion: 'traefik.containo.us/v1alpha1',
+    kind: 'Middleware',
+
+    metadata: {
+      name: 'redirect-https',
+    },
+
+    spec: {
+      redirectScheme: {
+        scheme: 'https',
+        permanent: false,  // TODO make permanent
       },
     },
   },

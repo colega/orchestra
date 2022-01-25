@@ -18,11 +18,11 @@ local prometheus = import 'prometheus-ksonnet/prometheus-ksonnet.libsonnet';
 
   // TODO deduplicate this from traefik
   // docs: https://doc.traefik.io/traefik/routing/providers/kubernetes-crd/
-  grafana_ingress: {
+  grafana_https_ingress: {
     apiVersion: 'traefik.containo.us/v1alpha1',
     kind: 'IngressRoute',
     metadata: {
-      name: 'grafana',
+      name: 'grafana-https',
     },
     spec: {
       entryPoints: ['websecure'],
@@ -42,11 +42,35 @@ local prometheus = import 'prometheus-ksonnet/prometheus-ksonnet.libsonnet';
     },
   },
 
-  prometheus_ingress: {
+  grafana_http_ingress: {
     apiVersion: 'traefik.containo.us/v1alpha1',
     kind: 'IngressRoute',
     metadata: {
-      name: 'prometheus',
+      name: 'grafana-http',
+    },
+    spec: {
+      entryPoints: ['web'],
+      routes: [
+        {
+          kind: 'Rule',
+          match: 'Host(`grafana.grafana.me`)',
+          services: [
+            { kind: 'Service', name: 'grafana', port: 'http' },
+          ],
+          middlewares: [
+            { name: 'redirect-https' },
+            { name: 'basic-auth-noheader' },  // TODO just in case since we're pointing to the real service
+          ],
+        },
+      ],
+    },
+  },
+
+  prometheus_https_ingress: {
+    apiVersion: 'traefik.containo.us/v1alpha1',
+    kind: 'IngressRoute',
+    metadata: {
+      name: 'prometheus-https',
     },
     spec: {
       entryPoints: ['websecure'],
@@ -63,6 +87,30 @@ local prometheus = import 'prometheus-ksonnet/prometheus-ksonnet.libsonnet';
         },
       ],
       tls: { options: { name: '' } },  // Otherwise doesn't work, see https://community.traefik.io/t/ingressroute-without-secretname-field-yields-404-response/1006
+    },
+  },
+
+  prometheus_http_ingress: {
+    apiVersion: 'traefik.containo.us/v1alpha1',
+    kind: 'IngressRoute',
+    metadata: {
+      name: 'prometheus-http',
+    },
+    spec: {
+      entryPoints: ['web'],
+      routes: [
+        {
+          kind: 'Rule',
+          match: 'Host(`prometheus.grafana.me`)',
+          services: [
+            { kind: 'Service', name: 'prometheus', port: 9090 },  // TODO: point to some dumb endpoint
+          ],
+          middlewares: [
+            { name: 'redirect-https' },
+            { name: 'basic-auth' },  // TODO just in case since we're pointing to the real service
+          ],
+        },
+      ],
     },
   },
 
@@ -96,5 +144,22 @@ local prometheus = import 'prometheus-ksonnet/prometheus-ksonnet.libsonnet';
       },
     },
   },
+
+  traefik_redirect_https_middleware: {
+    apiVersion: 'traefik.containo.us/v1alpha1',
+    kind: 'Middleware',
+
+    metadata: {
+      name: 'redirect-https',
+    },
+
+    spec: {
+      redirectScheme: {
+        scheme: 'https',
+        permanent: false,  // TODO make permanent
+      },
+    },
+  },
+
 
 }
