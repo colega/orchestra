@@ -4,6 +4,7 @@
 local k = import 'github.com/grafana/jsonnet-libs/ksonnet-util/kausal.libsonnet';
 local grafana = import 'grafana/grafana.libsonnet';
 local prometheus = import 'prometheus-ksonnet/prometheus-ksonnet.libsonnet';
+local middleware = import 'traefik/middleware.libsonnet';
 
 
 {
@@ -34,7 +35,7 @@ local prometheus = import 'prometheus-ksonnet/prometheus-ksonnet.libsonnet';
             { kind: 'Service', name: 'grafana', port: 'http' },
           ],
           middlewares: [
-            { name: 'basic-auth-noheader' },
+            { name: 'basic-auth-header' },
           ],
         },
       ],
@@ -114,52 +115,8 @@ local prometheus = import 'prometheus-ksonnet/prometheus-ksonnet.libsonnet';
     },
   },
 
-  traefik_basic_auth_middleware: {
-    apiVersion: 'traefik.containo.us/v1alpha1',
-    kind: 'Middleware',
-
-    metadata: {
-      name: 'basic-auth',
-    },
-
-    spec: {
-      basicAuth: {
-        secret: 'basic-auth',
-      },
-    },
-  },
-
-  traefik_basic_auth_noheader_middleware: {
-    apiVersion: 'traefik.containo.us/v1alpha1',
-    kind: 'Middleware',
-
-    metadata: {
-      name: 'basic-auth-noheader',
-    },
-
-    spec: {
-      basicAuth: {
-        secret: 'basic-auth',
-        removeHeader: true,
-      },
-    },
-  },
-
-  traefik_redirect_https_middleware: {
-    apiVersion: 'traefik.containo.us/v1alpha1',
-    kind: 'Middleware',
-
-    metadata: {
-      name: 'redirect-https',
-    },
-
-    spec: {
-      redirectScheme: {
-        scheme: 'https',
-        permanent: false,  // TODO make permanent
-      },
-    },
-  },
+  basic_auth: middleware.newBasicAuth(),
+  redirect_to_https: middleware.newRedirectToHTTPS(),
 
 
 }

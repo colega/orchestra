@@ -1,5 +1,6 @@
 local k = import 'github.com/grafana/jsonnet-libs/ksonnet-util/kausal.libsonnet';
 local traefik = import 'traefik/traefik.libsonnet';
+local middleware = import 'traefik/middleware.libsonnet';
 
 {
   traefik: traefik,
@@ -76,34 +77,6 @@ local traefik = import 'traefik/traefik.libsonnet';
     },
   },
 
-  traefik_basic_auth_middleware: {
-    apiVersion: 'traefik.containo.us/v1alpha1',
-    kind: 'Middleware',
-
-    metadata: {
-      name: 'basic-auth',
-    },
-    spec: {
-      basicAuth: {
-        secret: 'basic-auth',
-      },
-    },
-  },
-
-
-  traefik_redirect_https_middleware: {
-    apiVersion: 'traefik.containo.us/v1alpha1',
-    kind: 'Middleware',
-
-    metadata: {
-      name: 'redirect-https',
-    },
-
-    spec: {
-      redirectScheme: {
-        scheme: 'https',
-        permanent: false,  // TODO make permanent
-      },
-    },
-  },
+  basic_auth: middleware.newBasicAuth(),
+  redirect_to_https: middleware.newRedirectToHTTPS(),
 }
