@@ -1,81 +1,35 @@
 local k = import 'github.com/grafana/jsonnet-libs/ksonnet-util/kausal.libsonnet';
-local traefik = import 'traefik/traefik.libsonnet';
+local ingress = import 'traefik/ingress.libsonnet';
 local middleware = import 'traefik/middleware.libsonnet';
+local traefik = import 'traefik/traefik.libsonnet';
 
 {
   traefik: traefik,
 
-  traefik_https_ingress: {
-    apiVersion: 'traefik.containo.us/v1alpha1',
-    kind: 'IngressRoute',
-    metadata: {
-      name: 'traefik-dashboard-https',
-      namespace: 'traefik',
-    },
-    spec: {
-      entryPoints: ['websecure'],
-      routes: [
-        {
-          kind: 'Rule',
-          match: 'Host(`traefik.xeon.colega.eu`)',
-          services: [
-            { kind: 'TraefikService', name: 'api@internal' },
-          ],
-          middlewares: [
-            { name: 'basic-auth' },  // this will try to find <namespace>-<name>@kubernetescrd
-          ],
-        },
-      ],
-      tls: {
-        secretName: 'traefik.xeon.colega.eu-cert',
-      },
-    },
-  },
+  ingress: ingress.new(['traefik.xeon.colega.eu'])
+           + ingress.withMiddleware('basic-auth')
+           + ingress.withCustomService({ kind: 'TraefikService', name: 'api@internal' }),
 
-  traefik_https_ingress_certificate: {
-    apiVersion: 'cert-manager.io/v1',
-    kind: 'Certificate',
-    metadata: {
-      name: 'traefik.xeon.colega.eu',
-      namespace: 'traefik',
-    },
-    spec: {
-      dnsNames: [
-        'traefik.xeon.colega.eu',
-      ],
-      secretName: 'traefik.xeon.colega.eu-cert',
-      issuerRef: {
-        name: 'letsencrypt-prod',
-        kind: 'ClusterIssuer',
-      },
-    },
-  },
+  local container = k.core.v1.container,
+  nginx_container::
+    container.new('nginx', 'nginx:latest') +
+    container.withPorts(k.core.v1.containerPort.new('http', 80)),
 
+  local deployment = k.apps.v1.deployment,
+  nginx_deployment:
+    deployment.new('noop-nginx', 1, [$.nginx_container]),
 
-  traefik_http_ingress: {
-    apiVersion: 'traefik.containo.us/v1alpha1',
-    kind: 'IngressRoute',
-    metadata: {
-      name: 'traefik-dashboard-http',
-      namespace: 'traefik',
-    },
-    spec: {
-      entryPoints: ['web'],
-      routes: [
-        {
-          kind: 'Rule',
-          match: 'Host(`traefik.xeon.colega.eu`)',
-          services: [
-            { kind: 'TraefikService', name: 'api@internal' },  // TODO point to something dumb?
-          ],
-          middlewares: [
-            { name: 'redirect-https' },
-            { name: 'basic-auth' },  // TODO remove once not pointing to real service
-          ],
-        },
-      ],
-    },
-  },
+  local service = k.core.v1.service,
+  local servicePort = k.core.v1.servicePort,
+  nginx_service:
+    k.util.serviceFor(self.nginx_deployment) +
+    service.mixin.spec.withPorts([
+      servicePort.newNamed(
+        name='http',
+        port=80,
+        targetPort=80,
+      ),
+    ]),
 
   basic_auth: middleware.newBasicAuth(),
   redirect_to_https: middleware.newRedirectToHTTPS(),

@@ -1,5 +1,6 @@
 {
-  newRedirectToHTTPS(name='redirect-https', permanent=false): {
+  redirectToHTTPSDefaultName: 'redirect-https',
+  newRedirectToHTTPS(name=self.redirectToHTTPSDefaultName, permanent=false): {
     apiVersion: 'traefik.containo.us/v1alpha1',
     kind: 'Middleware',
 
@@ -15,7 +16,8 @@
     },
   },
 
-  newBasicAuth(name='basic-auth', secretName='basic-auth'): {
+  basicAuthDefaultName: 'basic-auth',
+  newBasicAuth(name=self.basicAuthDefaultName, secretName='basic-auth'): {
     apiVersion: 'traefik.containo.us/v1alpha1',
     kind: 'Middleware',
 

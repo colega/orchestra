@@ -5,7 +5,7 @@ local k = import 'github.com/grafana/jsonnet-libs/ksonnet-util/kausal.libsonnet'
 local grafana = import 'grafana/grafana.libsonnet';
 local prometheus = import 'prometheus-ksonnet/prometheus-ksonnet.libsonnet';
 local middleware = import 'traefik/middleware.libsonnet';
-
+local ingress = import 'traefik/ingress.libsonnet';
 
 {
   _config+:: {
@@ -17,103 +17,12 @@ local middleware = import 'traefik/middleware.libsonnet';
               grafana.withRootUrl('http://grafana.grafana.me')
               { _config+:: $._config },
 
-  // TODO deduplicate this from traefik
-  // docs: https://doc.traefik.io/traefik/routing/providers/kubernetes-crd/
-  grafana_https_ingress: {
-    apiVersion: 'traefik.containo.us/v1alpha1',
-    kind: 'IngressRoute',
-    metadata: {
-      name: 'grafana-https',
-    },
-    spec: {
-      entryPoints: ['websecure'],
-      routes: [
-        {
-          kind: 'Rule',
-          match: 'Host(`grafana.grafana.me`)',
-          services: [
-            { kind: 'Service', name: 'grafana', port: 'http' },
-          ],
-          middlewares: [
-            { name: 'basic-auth-header' },
-          ],
-        },
-      ],
-      tls: { options: { name: '' } },  // Otherwise doesn't work, see https://community.traefik.io/t/ingressroute-without-secretname-field-yields-404-response/1006
-    },
-  },
-
-  grafana_http_ingress: {
-    apiVersion: 'traefik.containo.us/v1alpha1',
-    kind: 'IngressRoute',
-    metadata: {
-      name: 'grafana-http',
-    },
-    spec: {
-      entryPoints: ['web'],
-      routes: [
-        {
-          kind: 'Rule',
-          match: 'Host(`grafana.grafana.me`)',
-          services: [
-            { kind: 'Service', name: 'grafana', port: 'http' },
-          ],
-          middlewares: [
-            { name: 'redirect-https' },
-            { name: 'basic-auth-noheader' },  // TODO just in case since we're pointing to the real service
-          ],
-        },
-      ],
-    },
-  },
-
-  prometheus_https_ingress: {
-    apiVersion: 'traefik.containo.us/v1alpha1',
-    kind: 'IngressRoute',
-    metadata: {
-      name: 'prometheus-https',
-    },
-    spec: {
-      entryPoints: ['websecure'],
-      routes: [
-        {
-          kind: 'Rule',
-          match: 'Host(`prometheus.grafana.me`)',
-          services: [
-            { kind: 'Service', name: 'prometheus', port: 9090 },
-          ],
-          middlewares: [
-            { name: 'basic-auth' },
-          ],
-        },
-      ],
-      tls: { options: { name: '' } },  // Otherwise doesn't work, see https://community.traefik.io/t/ingressroute-without-secretname-field-yields-404-response/1006
-    },
-  },
-
-  prometheus_http_ingress: {
-    apiVersion: 'traefik.containo.us/v1alpha1',
-    kind: 'IngressRoute',
-    metadata: {
-      name: 'prometheus-http',
-    },
-    spec: {
-      entryPoints: ['web'],
-      routes: [
-        {
-          kind: 'Rule',
-          match: 'Host(`prometheus.grafana.me`)',
-          services: [
-            { kind: 'Service', name: 'prometheus', port: 9090 },  // TODO: point to some dumb endpoint
-          ],
-          middlewares: [
-            { name: 'redirect-https' },
-            { name: 'basic-auth' },  // TODO just in case since we're pointing to the real service
-          ],
-        },
-      ],
-    },
-  },
+  grafana_ingress: ingress.new(['grafana.grafana.me'])
+           + ingress.withMiddleware('basic-auth')
+           + ingress.withService('grafana'),
+  prometheus_ingress: ingress.new(['prometheus.grafana.me'])
+           + ingress.withMiddleware('basic-auth')
+           + ingress.withService('prometheus', 9090),
 
   basic_auth: middleware.newBasicAuth(),
   redirect_to_https: middleware.newRedirectToHTTPS(),
