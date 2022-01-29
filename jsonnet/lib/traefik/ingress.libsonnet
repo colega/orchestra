@@ -9,6 +9,8 @@ local middleware = import 'middleware.libsonnet';
 
       middlewares:: [],
       services:: [],
+      host_matcher:: std.join(' || ', ['Host(`%s`)' % domain for domain in domains]),
+      extra_matcher:: '',
 
       certificate: {
         apiVersion: 'cert-manager.io/v1',
@@ -37,7 +39,10 @@ local middleware = import 'middleware.libsonnet';
           routes: [
             {
               kind: 'Rule',
-              match: std.join(' || ', ['Host(`%s`)' % domain for domain in domains]),
+              match: if (this.extra_matcher == '') then this.host_matcher else '(%(host_matcher)s) && (%(extra_matcher)s)' % {
+                host_matcher: this.host_matcher,
+                extra_matcher: this.extra_matcher,
+              },
               services: this.services,
               middlewares: this.middlewares,
             },
@@ -60,19 +65,17 @@ local middleware = import 'middleware.libsonnet';
           routes: [
             {
               kind: 'Rule',
-              match: std.join(' || ', ['Host(`%s`)' % domain for domain in domains]),
+              match: this.host_matcher,
               services: [
                 { kind: 'Service', namespace: 'traefik', name: 'noop-nginx', port: 'http' },
               ],
               middlewares: [
-                { name: middleware.redirectToHTTPSDefaultName },
+                { name: middleware.redirectToHTTPSDefaultName, namespace: 'traefik' },
               ],
             },
           ],
         },
       },
-
-
     },
 
   withMiddleware(name):: {
@@ -85,5 +88,9 @@ local middleware = import 'middleware.libsonnet';
 
   withService(name, port='http', namespace=null):: {
     services+:: [{ kind: 'Service', namespace: namespace, name: name, port: port }],
+  },
+
+  matching(matcher):: {
+    extra_matcher: matcher,
   },
 }

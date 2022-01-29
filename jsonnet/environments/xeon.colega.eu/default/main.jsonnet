@@ -30,5 +30,4 @@ local middleware = import 'traefik/middleware.libsonnet';
                       + ingress.withService('prometheus', 9090),
 
   basic_auth: middleware.newBasicAuth(),
-  redirect_to_https: middleware.newRedirectToHTTPS(),
 }
