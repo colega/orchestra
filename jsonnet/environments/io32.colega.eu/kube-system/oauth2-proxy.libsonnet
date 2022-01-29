@@ -20,7 +20,7 @@ local k = import 'ksonnet-util/kausal.libsonnet';
         '--redirect-url=' + redirect,
         '--upstream=' + upstream,
         '--authenticated-emails-file=/etc/oauth2/emails.txt',
-        '--cookie-secure=false', // TODO until we have ssl
+        '--cookie-secure=false',  // TODO until we have ssl
       ]) +
       container.withEnvFrom(
         envFrom.secretRef.withName(secret_name),
