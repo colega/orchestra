@@ -2,11 +2,6 @@ local k = import 'github.com/grafana/jsonnet-libs/ksonnet-util/kausal.libsonnet'
 local traefik = import 'traefik/traefik.libsonnet';
 
 {
-  _config+:: {
-    cluster_name: 'xeon.colega.eu',
-    namespace: 'traefik',
-  },
-
   traefik: traefik,
 
   traefik_https_ingress: {
@@ -30,9 +25,31 @@ local traefik = import 'traefik/traefik.libsonnet';
           ],
         },
       ],
-      tls: { options: { name: '' } },  // Otherwise doesn't work, see https://community.traefik.io/t/ingressroute-without-secretname-field-yields-404-response/1006
+      tls: {
+        secretName: 'traefik.xeon.colega.eu-cert',
+      },
     },
   },
+
+  traefik_https_ingress_certificate: {
+    apiVersion: 'cert-manager.io/v1',
+    kind: 'Certificate',
+    metadata: {
+      name: 'traefik.xeon.colega.eu',
+      namespace: 'traefik',
+    },
+    spec: {
+      dnsNames: [
+        'traefik.xeon.colega.eu',
+      ],
+      secretName: 'traefik.xeon.colega.eu-cert',
+      issuerRef: {
+        name: 'letsencrypt-prod',
+        kind: 'ClusterIssuer',
+      },
+    },
+  },
+
 
   traefik_http_ingress: {
     apiVersion: 'traefik.containo.us/v1alpha1',
