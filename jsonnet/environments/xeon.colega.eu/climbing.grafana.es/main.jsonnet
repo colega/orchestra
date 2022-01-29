@@ -54,7 +54,7 @@ local middleware = import 'traefik/middleware.libsonnet';
         },
         users+: {
           // https://climbing.grafana.es
-          home_page: '/d/climbing-madrid/',
+          home_page: '/d/climbing-madrid/?kiosk=tv',
         },
         dashboards+: {
           // hacky, this is where it will be mounted, unless there are too many dashboards in that folder and it might not be in 0.
