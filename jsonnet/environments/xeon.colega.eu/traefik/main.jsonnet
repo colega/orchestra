@@ -4,6 +4,12 @@ local middleware = import 'traefik/middleware.libsonnet';
 local traefik = import 'traefik/traefik.libsonnet';
 
 {
+  _config+:: {
+    namespace: 'traefik',
+  },
+
+  namespace: k.core.v1.namespace.new($._config.namespace),
+
   traefik: traefik,
 
   ingress: ingress.new(['traefik.xeon.colega.eu'])

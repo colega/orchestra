@@ -4,8 +4,11 @@ local k = import 'github.com/grafana/jsonnet-libs/ksonnet-util/kausal.libsonnet'
 
 cert_manager + default_issuers {
   _config:: {
+    namespace: 'cert-manager',
     issuer_email: 'mail@olegzaytsev.com',
   },
+
+  namespace: k.core.v1.namespace.new($._config.namespace),
 
   cluster_issuer_self_signed: {
     apiVersion: 'cert-manager.io/v1',

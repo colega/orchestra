@@ -13,6 +13,8 @@ local middleware = import 'traefik/middleware.libsonnet';
     namespace: 'default',
   },
 
+  namespace: k.core.v1.namespace.new($._config.namespace),
+
   prometheus: prometheus +
               grafana.withRootUrl('http://grafana.grafana.me')
               {
