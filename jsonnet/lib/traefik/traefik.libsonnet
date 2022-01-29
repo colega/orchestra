@@ -13,6 +13,7 @@ local helm = tanka.helm.new(std.thisFile);
         '--log.level=DEBUG',
         //'--providers.kubernetesingress.ingressclass=traefik-internal',
         '--serversTransport.insecureSkipVerify=true',
+        '--providers.kubernetescrd.allowCrossNamespace=true',
       ],
     },
   }),

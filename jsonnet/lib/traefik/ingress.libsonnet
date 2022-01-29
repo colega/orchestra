@@ -62,7 +62,7 @@ local middleware = import 'middleware.libsonnet';
               kind: 'Rule',
               match: std.join(' || ', ['Host(`%s`)' % domain for domain in domains]),
               services: [
-                { kind: 'Service', namespace: 'traefik', name: 'noop-nginx', port: 'http' },  // TODO point to something dumb?
+                { kind: 'Service', namespace: 'traefik', name: 'noop-nginx', port: 'http' },
               ],
               middlewares: [
                 { name: middleware.redirectToHTTPSDefaultName },
