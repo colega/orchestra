@@ -4,8 +4,8 @@
 local k = import 'github.com/grafana/jsonnet-libs/ksonnet-util/kausal.libsonnet';
 local grafana = import 'grafana/grafana.libsonnet';
 local prometheus = import 'prometheus-ksonnet/prometheus-ksonnet.libsonnet';
-local middleware = import 'traefik/middleware.libsonnet';
 local ingress = import 'traefik/ingress.libsonnet';
+local middleware = import 'traefik/middleware.libsonnet';
 
 {
   _config+:: {
@@ -15,14 +15,18 @@ local ingress = import 'traefik/ingress.libsonnet';
 
   prometheus: prometheus +
               grafana.withRootUrl('http://grafana.grafana.me')
-              { _config+:: $._config },
+              {
+                _config+:: $._config,
+                // Increase the default 200m to avoid cpu throttling alert.
+                node_exporter_container+:: k.util.resourcesLimits('500m', '100Mi'),
+              },
 
   grafana_ingress: ingress.new(['grafana.grafana.me'])
-           + ingress.withMiddleware('basic-auth')
-           + ingress.withService('grafana'),
+                   + ingress.withMiddleware('basic-auth')
+                   + ingress.withService('grafana'),
   prometheus_ingress: ingress.new(['prometheus.grafana.me'])
-           + ingress.withMiddleware('basic-auth')
-           + ingress.withService('prometheus', 9090),
+                      + ingress.withMiddleware('basic-auth')
+                      + ingress.withService('prometheus', 9090),
 
   basic_auth: middleware.newBasicAuth(),
   redirect_to_https: middleware.newRedirectToHTTPS(),
