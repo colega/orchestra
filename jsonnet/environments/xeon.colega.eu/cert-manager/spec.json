@@ -8,6 +8,7 @@
     "apiServer": "https://xeon.colega.eu:6443",
     "namespace": "cert-manager",
     "resourceDefaults": {},
-    "expectVersions": {}
+    "expectVersions": {},
+    "injectLabels": true
   }
 }
