@@ -2,7 +2,6 @@
 // That is not handled by tanka.
 
 local k = import 'github.com/grafana/jsonnet-libs/ksonnet-util/kausal.libsonnet';
-local grafana = import 'grafana/grafana.libsonnet';
 local prometheus = import 'prometheus-ksonnet/prometheus-ksonnet.libsonnet';
 local ingress = import 'traefik/ingress.libsonnet';
 local middleware = import 'traefik/middleware.libsonnet';
@@ -15,13 +14,13 @@ local middleware = import 'traefik/middleware.libsonnet';
 
   namespace: k.core.v1.namespace.new($._config.namespace),
 
-  prometheus: prometheus +
-              grafana.withRootUrl('http://grafana.grafana.me')
-              {
-                _config+:: $._config,
-                // Increase the default 200m to avoid cpu throttling alert.
-                node_exporter_container+:: k.util.resourcesLimits('500m', '100Mi'),
-              },
+  prometheus: prometheus {
+    _config+:: $._config {
+      grafana_root_url: 'https://grafana.grafana.me',
+    },
+    // Increase the default 200m to avoid cpu throttling alert.
+    node_exporter_container+:: k.util.resourcesLimits('500m', '100Mi'),
+  },
 
   grafana_ingress: ingress.new(['grafana.grafana.me'])
                    + ingress.withMiddleware('basic-auth')
@@ -32,6 +31,4 @@ local middleware = import 'traefik/middleware.libsonnet';
 
   basic_auth: middleware.newBasicAuth(),
   redirect_to_https: middleware.newRedirectToHTTPS(),
-
-
 }
