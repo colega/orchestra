@@ -15,6 +15,20 @@
           "type": "dashboard"
         },
         "type": "dashboard"
+      },
+      {
+        "datasource": "prometheus",
+        "enable": true,
+        "expr": "vector(1) and (day_of_week(vector(time() + 3600)) * (day_of_week(vector(time() + 3600)) - 6) == 0)",
+        "iconColor": "super-light-blue",
+        "name": "Weekend days",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
+        "titleFormat": "Weekend"
       }
     ]
   },
@@ -38,7 +52,7 @@
             "barAlignment": 0,
             "drawStyle": "line",
             "fillOpacity": 0,
-            "gradientMode": "opacity",
+            "gradientMode": "none",
             "hideFrom": {
               "graph": false,
               "legend": false,
@@ -117,7 +131,7 @@
               {
                 "id": "color",
                 "value": {
-                  "fixedColor": "blue",
+                  "fixedColor": "light-blue",
                   "mode": "fixed"
                 }
               }
@@ -179,7 +193,7 @@
             "barAlignment": 0,
             "drawStyle": "line",
             "fillOpacity": 0,
-            "gradientMode": "opacity",
+            "gradientMode": "none",
             "hideFrom": {
               "graph": false,
               "legend": false,
@@ -258,7 +272,7 @@
               {
                 "id": "color",
                 "value": {
-                  "fixedColor": "blue",
+                  "fixedColor": "light-blue",
                   "mode": "fixed"
                 }
               }
@@ -320,7 +334,7 @@
             "barAlignment": 0,
             "drawStyle": "line",
             "fillOpacity": 0,
-            "gradientMode": "opacity",
+            "gradientMode": "none",
             "hideFrom": {
               "graph": false,
               "legend": false,
@@ -424,7 +438,7 @@
               {
                 "id": "color",
                 "value": {
-                  "fixedColor": "blue",
+                  "fixedColor": "light-blue",
                   "mode": "fixed"
                 }
               }
@@ -486,7 +500,7 @@
     "list": []
   },
   "time": {
-    "from": "now-24h",
+    "from": "now-7d",
     "to": "now"
   },
   "timepicker": {
