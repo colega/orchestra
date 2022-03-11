@@ -134,6 +134,16 @@
     {
       "source": {
         "git": {
+          "remote": "https://github.com/grafana/loki.git",
+          "subdir": "production/ksonnet/promtail"
+        }
+      },
+      "version": "d320873e825f5e84bf6f1279c2ac9c8a989e286b",
+      "sum": "ya+aHGklDLG6BxaDw75oQiZIUwpu+TTjxA1oGtOigGQ="
+    },
+    {
+      "source": {
+        "git": {
           "remote": "https://github.com/jsonnet-libs/docsonnet.git",
           "subdir": "doc-util"
         }
