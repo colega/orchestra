@@ -1,11 +1,11 @@
-// There's also a grafana-agent here installed from plain helmchart using Grafana Cloud Kubernetes integration instructions.
-// That is not handled by tanka.
-
 local k = import 'github.com/grafana/jsonnet-libs/ksonnet-util/kausal.libsonnet';
 local promtail = import 'github.com/grafana/loki/production/ksonnet/promtail/promtail.libsonnet';
 local prometheus = import 'prometheus-ksonnet/prometheus-ksonnet.libsonnet';
 local ingress = import 'traefik/ingress.libsonnet';
 local middleware = import 'traefik/middleware.libsonnet';
+
+local configMap = k.core.v1.configMap;
+local secret = k.core.v1.secret;
 
 {
   _config+:: {
@@ -33,8 +33,12 @@ local middleware = import 'traefik/middleware.libsonnet';
                       + ingress.withMiddleware('basic-auth')
                       + ingress.withService('prometheus', 9090),
 
-  basic_auth: middleware.newBasicAuth(),
-
+  local basicAuthSecretName = 'basic-auth',
+  basic_auth_secret: secret.new(
+    basicAuthSecretName,
+    { users: std.base64(importstr 'basic-auth.secret.users.txt') }
+  ),
+  basic_auth: middleware.newBasicAuth(secretName=basicAuthSecretName),
 
   promtail: promtail {
     _config+:: $._config,
@@ -49,7 +53,21 @@ local middleware = import 'traefik/middleware.libsonnet';
     },
     _images+:: $._images,
 
+    promtailApiKeyConfigMap:
+      configMap.new('grafana-cloud-mykubernetes-writes-api-key')
+      + configMap.withData({
+        'api_key.yml': importstr 'grafana-cloud-mykubernetes-writes-api-key.secret.api_key.yml',
+      }),
+
     promtail_daemonset+:
       k.util.configVolumeMount('grafana-cloud-mykubernetes-writes-api-key', '/etc/promtail_auth'),
   },
+
+  // There's also a grafana-agent here installed from plain helmchart using Grafana Cloud Kubernetes integration instructions.
+  // That is not handled by tanka.
+  grafanaAgentConfigMap:
+    configMap.new('grafana-agent')
+    + configMap.withData({
+      'agent.yaml': importstr 'grafana-agent.secret.agent.yaml',
+    }),
 }

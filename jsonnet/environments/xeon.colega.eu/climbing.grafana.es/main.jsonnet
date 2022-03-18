@@ -2,9 +2,8 @@ local k = import 'github.com/grafana/jsonnet-libs/ksonnet-util/kausal.libsonnet'
 local grafana = import 'grafana/grafana.libsonnet';
 local ingress = import 'traefik/ingress.libsonnet';
 local middleware = import 'traefik/middleware.libsonnet';
-local credentials_secret = import 'credentials.secret.jsonnet';
 
-credentials_secret + {
+{
   _config+:: {
     cluster_name: 'xeon.colega.eu',
     namespace: 'climbing-grafana-es',
@@ -20,6 +19,14 @@ credentials_secret + {
                    + ingress.withService('grafana'),
 
   prometheus_datasource:: grafana.datasource.new('prometheus', $._config.prometheus_url, type='prometheus', default=true),
+
+  grafana_admin_password_secret:
+    k.core.v1.secret.new(
+      $._config.grafana_admin_password_secret_name,
+      {
+        password: std.base64(importstr 'grafana.secret.password.txt'),
+      },
+    ),
 
   grafana:
     grafana {

@@ -3,6 +3,8 @@ local ingress = import 'traefik/ingress.libsonnet';
 local middleware = import 'traefik/middleware.libsonnet';
 local traefik = import 'traefik/traefik.libsonnet';
 
+local secret = k.core.v1.secret;
+
 {
   _config+:: {
     namespace: 'traefik',
@@ -37,6 +39,11 @@ local traefik = import 'traefik/traefik.libsonnet';
       ),
     ]),
 
-  basic_auth: middleware.newBasicAuth(),
+  local basicAuthSecretName = 'basic-auth',
+  basic_auth_secret: secret.new(
+    basicAuthSecretName,
+    { users: std.base64(importstr 'basic-auth.secret.users.txt') }
+  ),
+  basic_auth: middleware.newBasicAuth(secretName=basicAuthSecretName),
   redirect_to_https: middleware.newRedirectToHTTPS(),
 }
