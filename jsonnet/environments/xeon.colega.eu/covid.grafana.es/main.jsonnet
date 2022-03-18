@@ -1,10 +1,9 @@
-local credentials_secret = import 'credentials.secret.jsonnet';
 local k = import 'github.com/grafana/jsonnet-libs/ksonnet-util/kausal.libsonnet';
 local grafana = import 'grafana/grafana.libsonnet';
 local ingress = import 'traefik/ingress.libsonnet';
 local middleware = import 'traefik/middleware.libsonnet';
 
-credentials_secret {
+{
   _config+:: {
     cluster_name: 'xeon.colega.eu',
     namespace: 'covid-grafana-es',
@@ -23,6 +22,14 @@ credentials_secret {
     type='marcusolsson-csv-datasource',
     default=true,
   ),
+
+  grafana_admin_password_secret:
+    k.core.v1.secret.new(
+      $._config.grafana_admin_password_secret_name,
+      {
+        password: std.base64(importstr 'grafana.secret.password.txt'),
+      },
+    ),
 
   grafana:
     grafana {
