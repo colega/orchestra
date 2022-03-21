@@ -1,0 +1,14 @@
+{
+  "apiVersion": "tanka.dev/v1alpha1",
+  "kind": "Environment",
+  "metadata": {
+    "name": "environments/xeon.colega.eu/wireguard"
+  },
+  "spec": {
+    "apiServer": "https://xeon.colega.eu:6443",
+    "namespace": "wireguard",
+    "injectLabels": true,
+    "resourceDefaults": {},
+    "expectVersions": {}
+  }
+}
