@@ -1,6 +1,8 @@
 local k = import 'github.com/grafana/jsonnet-libs/ksonnet-util/kausal.libsonnet';
 
 {
+  namespace: k.core.v1.namespace.new('wireguard'),
+
   local container = k.core.v1.container,
   local containerPort = k.core.v1.containerPort,
 

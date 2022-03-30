@@ -1,0 +1,14 @@
+{
+  "apiVersion": "tanka.dev/v1alpha1",
+  "kind": "Environment",
+  "metadata": {
+    "name": "environments/xeon.colega.eu/olegzaytsev.com"
+  },
+  "spec": {
+    "apiServer": "https://xeon.colega.eu:6443",
+    "namespace": "olegzaytsev-com",
+    "injectLabels": true,
+    "resourceDefaults": {},
+    "expectVersions": {}
+  }
+}

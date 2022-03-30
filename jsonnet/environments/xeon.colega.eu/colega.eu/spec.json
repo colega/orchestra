@@ -1,0 +1,14 @@
+{
+  "apiVersion": "tanka.dev/v1alpha1",
+  "kind": "Environment",
+  "metadata": {
+    "name": "environments/xeon.colega.eu/colega.eu"
+  },
+  "spec": {
+    "apiServer": "https://xeon.colega.eu:6443",
+    "namespace": "colega-eu",
+    "resourceDefaults": {},
+    "expectVersions": {},
+    "injectLabels": true
+  }
+}
