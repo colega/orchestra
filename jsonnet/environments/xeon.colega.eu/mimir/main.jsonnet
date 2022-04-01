@@ -72,7 +72,7 @@ mimir + scaling {
 
       ingress: ingress.new(['mimir-reads.colega.eu'])
                + ingress.withMiddleware(authMiddlewareName)
-               + ingress.withService('distributor', 8080),
+               + ingress.withService('query-frontend', 8080),
     },
 
     writes: {
@@ -82,7 +82,7 @@ mimir + scaling {
 
       ingress: ingress.new(['mimir-writes.colega.eu'])
                + ingress.withMiddleware(authMiddlewareName)
-               + ingress.withService('query-frontend', 8080),
+               + ingress.withService('distributor', 8080),
     },
   },
 }
