@@ -17,17 +17,18 @@
   },
 
   basicAuthDefaultName: 'basic-auth',
-  newBasicAuth(name=self.basicAuthDefaultName, secretName='basic-auth'): {
+  newBasicAuth(name=self.basicAuthDefaultName, secretName='basic-auth', headerField=null): {
     apiVersion: 'traefik.containo.us/v1alpha1',
     kind: 'Middleware',
 
     metadata: {
-      name: 'basic-auth',
+      name: name,
     },
     spec: {
       basicAuth: {
-        secret: 'basic-auth',
+        secret: secretName,
         removeHeader: true,
+        [if headerField != null then 'headerField']: headerField,
       },
     },
   },
