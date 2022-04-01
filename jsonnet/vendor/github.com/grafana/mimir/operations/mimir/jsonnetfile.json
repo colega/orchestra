@@ -5,6 +5,33 @@
       "source": {
         "git": {
           "remote": "https://github.com/grafana/jsonnet-libs.git",
+          "subdir": "consul"
+        }
+      },
+      "version": "master"
+    },
+    {
+      "source": {
+        "git": {
+          "remote": "https://github.com/grafana/jsonnet-libs.git",
+          "subdir": "etcd-operator"
+        }
+      },
+      "version": "master"
+    },
+    {
+      "source": {
+        "git": {
+          "remote": "https://github.com/grafana/jsonnet-libs.git",
+          "subdir": "jaeger-agent-mixin"
+        }
+      },
+      "version": "master"
+    },
+    {
+      "source": {
+        "git": {
+          "remote": "https://github.com/grafana/jsonnet-libs.git",
           "subdir": "ksonnet-util"
         }
       },
@@ -14,55 +41,10 @@
       "source": {
         "git": {
           "remote": "https://github.com/grafana/jsonnet-libs.git",
-          "subdir": "oauth2-proxy"
+          "subdir": "memcached"
         }
       },
       "version": "master"
-    },
-    {
-      "source": {
-        "git": {
-          "remote": "https://github.com/grafana/jsonnet-libs.git",
-          "subdir": "prometheus-ksonnet"
-        }
-      },
-      "version": "master"
-    },
-    {
-      "source": {
-        "git": {
-          "remote": "https://github.com/grafana/jsonnet-libs.git",
-          "subdir": "tanka-util"
-        }
-      },
-      "version": "master"
-    },
-    {
-      "source": {
-        "git": {
-          "remote": "https://github.com/grafana/loki.git",
-          "subdir": "production/ksonnet/promtail"
-        }
-      },
-      "version": "main"
-    },
-    {
-      "source": {
-        "git": {
-          "remote": "https://github.com/grafana/mimir.git",
-          "subdir": "operations/mimir"
-        }
-      },
-      "version": "main"
-    },
-    {
-      "source": {
-        "git": {
-          "remote": "https://github.com/jsonnet-libs/k8s-libsonnet.git",
-          "subdir": "1.21"
-        }
-      },
-      "version": "main"
     }
   ],
   "legacyImports": true

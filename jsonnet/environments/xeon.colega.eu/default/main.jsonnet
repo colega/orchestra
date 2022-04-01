@@ -5,6 +5,7 @@ local ingress = import 'traefik/ingress.libsonnet';
 local middleware = import 'traefik/middleware.libsonnet';
 
 local configMap = k.core.v1.configMap;
+local pvc = k.core.v1.persistentVolumeClaim;
 local secret = k.core.v1.secret;
 
 {
@@ -24,6 +25,10 @@ local secret = k.core.v1.secret;
     },
     // Increase the default 200m to avoid cpu throttling alert.
     node_exporter_container+:: k.util.resourcesLimits('500m', '100Mi'),
+
+    prometheus+: {
+      prometheus_pvc+:: pvc.mixin.spec.resources.withRequests({ storage: '32Gi' }),
+    },
   },
 
   grafana_ingress: ingress.new(['grafana.grafana.me'])

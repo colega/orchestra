@@ -35,6 +35,26 @@
       "source": {
         "git": {
           "remote": "https://github.com/grafana/jsonnet-libs.git",
+          "subdir": "consul"
+        }
+      },
+      "version": "98c3060877aa178f6bdfc6ac618fbe0043fc3de7",
+      "sum": "Po3c1Ic96ngrJCtOazic/7OsLkoILOKZWXWyZWl+od8="
+    },
+    {
+      "source": {
+        "git": {
+          "remote": "https://github.com/grafana/jsonnet-libs.git",
+          "subdir": "etcd-operator"
+        }
+      },
+      "version": "98c3060877aa178f6bdfc6ac618fbe0043fc3de7",
+      "sum": "fQC1HY2iSTGfd4UfUE0nomf6NcRT+6xaVTDgwwRCrQc="
+    },
+    {
+      "source": {
+        "git": {
+          "remote": "https://github.com/grafana/jsonnet-libs.git",
           "subdir": "grafana"
         }
       },
@@ -55,6 +75,16 @@
       "source": {
         "git": {
           "remote": "https://github.com/grafana/jsonnet-libs.git",
+          "subdir": "jaeger-agent-mixin"
+        }
+      },
+      "version": "98c3060877aa178f6bdfc6ac618fbe0043fc3de7",
+      "sum": "DsdBoqgx5kE3zc6fMYnfiGjW2+9Mx2OXFieWm1oFHgY="
+    },
+    {
+      "source": {
+        "git": {
+          "remote": "https://github.com/grafana/jsonnet-libs.git",
           "subdir": "ksonnet-util"
         }
       },
@@ -70,6 +100,16 @@
       },
       "version": "5a128df878434da37969b811e99bb9cd0a3779e3",
       "sum": "kH7gD2rdqRtBujmCObN0ifNF/BkSZU8pleFRI8itkqY="
+    },
+    {
+      "source": {
+        "git": {
+          "remote": "https://github.com/grafana/jsonnet-libs.git",
+          "subdir": "memcached"
+        }
+      },
+      "version": "fa7633803d478c461352f9a4a67ca6fd0a1a7b30",
+      "sum": "8hXTN4QOMkpad75LESkdfRD4/Sl81fMqZcD0ZPx2SNc="
     },
     {
       "source": {
@@ -140,6 +180,16 @@
       },
       "version": "d320873e825f5e84bf6f1279c2ac9c8a989e286b",
       "sum": "ya+aHGklDLG6BxaDw75oQiZIUwpu+TTjxA1oGtOigGQ="
+    },
+    {
+      "source": {
+        "git": {
+          "remote": "https://github.com/grafana/mimir.git",
+          "subdir": "operations/mimir"
+        }
+      },
+      "version": "114ab88b50638a2047e2ca2a60640f6ca6fe8c17",
+      "sum": "MIOXlPCnNeCVX/c1fxZvtmkS+t4jc5fYXXxIOwWCBVE="
     },
     {
       "source": {

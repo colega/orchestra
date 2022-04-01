@@ -1,0 +1,14 @@
+{
+  "apiVersion": "tanka.dev/v1alpha1",
+  "kind": "Environment",
+  "metadata": {
+    "name": "environments/xeon.colega.eu/mimir"
+  },
+  "spec": {
+    "apiServer": "https://xeon.colega.eu:6443",
+    "namespace": "mimir",
+    "injectLabels": true,
+    "resourceDefaults": {},
+    "expectVersions": {}
+  }
+}
