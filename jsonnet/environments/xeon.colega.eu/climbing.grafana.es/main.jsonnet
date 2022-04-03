@@ -1,5 +1,7 @@
 local k = import 'github.com/grafana/jsonnet-libs/ksonnet-util/kausal.libsonnet';
 local grafana = import 'grafana/grafana.libsonnet';
+local json_exporter = import 'json-exporter/json-exporter.libsonnet';
+local prometheus = import 'prometheus/prometheus.libsonnet';
 local ingress = import 'traefik/ingress.libsonnet';
 local middleware = import 'traefik/middleware.libsonnet';
 
@@ -66,4 +68,57 @@ local middleware = import 'traefik/middleware.libsonnet';
     + grafana.addDashboard('climbing-madrid', (import 'dashboards/climbing-madrid.json'), folder='Climbing')
     + grafana.addDatasource('prometheus', $.prometheus_datasource)
     + grafana.withRootUrl('https://climbing.grafana.es'),
+
+
+  json_exporters: {
+    sputnik_alcobendas: json_exporter {
+      scrape_address:: 'https://clientes.sputnikclimbing.com/ScheduleV2/GetPeopleInTheGym',
+      _config+:: {
+        name: 'json-exporter-sputnik-alcobendas-climbing',
+        config_yaml: importstr 'json_exporter_sputnik_alcobendas.yaml',
+      },
+    },
+    sputnik_lasrozas: json_exporter {
+      scrape_address:: 'https://clientes.sputnikclimbing.com/ScheduleV2/GetPeopleInTheGym',
+      _config+:: {
+        name: 'json-exporter-sputnik-lasrozas-climbing',
+        config_yaml: importstr 'json_exporter_sputnik_lasrozas.yaml',
+      },
+    },
+  },
+
+  prometheus: prometheus {
+    _config+:: {
+      namespace: $._config.namespace,
+      prometheus_requests_cpu: '100m',
+      prometheus_requests_memory: '128Mi',
+      prometheus_limits_cpu: null,
+      prometheus_limits_memory: '256Mi',
+    },
+    prometheus_config+:: {
+      global: {
+        scrape_interval: '60s',
+      },
+    },
+    scrape_configs:: {
+      'sputnik-alcobendas-climbing': {
+        job_name: 'sputnik-alcobendas-climbing',
+        metrics_path: '/probe',
+        static_configs: [
+          { targets: [$.json_exporters.sputnik_alcobendas.scrape_address] },
+        ],
+        relabel_configs: json_exporter.relabel_configs('json-exporter-sputnik-alcobendas-climbing:7979'),
+      },
+      'sputnik-lasrozas-climbing': {
+        job_name: 'sputnik-lasrozas-climbing',
+        metrics_path: '/probe',
+        static_configs: [
+          { targets: [$.json_exporters.sputnik_lasrozas.scrape_address] },
+        ],
+        relabel_configs: json_exporter.relabel_configs('json-exporter-sputnik-lasrozas-climbing:7979'),
+      },
+    },
+    prometheus_pvc+::
+      k.core.v1.persistentVolumeClaim.mixin.spec.resources.withRequests({ storage: '512Mi' }),
+  },
 }

@@ -1,0 +1,22 @@
+metrics:
+- name: climbing_gym_people
+  path: "{ .People }"
+  help: Amount of people currently in the the GYM.
+  labels:
+    brand: Sputnik
+    location: Alcobendas
+    name: Sputnik Alcobendas
+- name: climbing_gym_capacity
+  path: "{ .Capacity }"
+  help: Maximum amount of people allowed in the GYM.
+  labels:
+    brand: Sputnik
+    location: Alcobendas
+    name: Sputnik Alcobendas
+    type: soft
+
+body:
+  content: |
+    {"Namespace":"sputnik","GymID":121}
+headers:
+  Content-Type: application/json
