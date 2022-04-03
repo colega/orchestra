@@ -104,17 +104,13 @@ local middleware = import 'traefik/middleware.libsonnet';
       'sputnik-alcobendas-climbing': {
         job_name: 'sputnik-alcobendas-climbing',
         metrics_path: '/probe',
-        static_configs: [
-          { targets: [$.json_exporters.sputnik_alcobendas.scrape_address] },
-        ],
+        static_configs: [{ targets: [$.json_exporters.sputnik_alcobendas.scrape_address] }],
         relabel_configs: json_exporter.relabel_configs('json-exporter-sputnik-alcobendas-climbing:7979'),
       },
       'sputnik-lasrozas-climbing': {
         job_name: 'sputnik-lasrozas-climbing',
         metrics_path: '/probe',
-        static_configs: [
-          { targets: [$.json_exporters.sputnik_lasrozas.scrape_address] },
-        ],
+        static_configs: [{ targets: [$.json_exporters.sputnik_lasrozas.scrape_address] }],
         relabel_configs: json_exporter.relabel_configs('json-exporter-sputnik-lasrozas-climbing:7979'),
       },
     },
