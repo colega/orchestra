@@ -19,6 +19,7 @@ local secret = k.core.v1.secret;
 
   namespace: k.core.v1.namespace.new($._config.namespace),
 
+  // This is not just a prometheus, it's also a grafana, rules, dashboards, etc.
   prometheus: prometheus {
     _config+:: $._config {
       grafana_root_url: 'https://grafana.grafana.me',
@@ -27,6 +28,12 @@ local secret = k.core.v1.secret;
     node_exporter_container+:: k.util.resourcesLimits('500m', '100Mi'),
 
     prometheus+: {
+      _config+: {
+        prometheus_requests_cpu: '250m',
+        prometheus_requests_memory: '256Mi',
+        prometheus_limits_cpu: null,
+        prometheus_limits_memory: '512Mi',
+      },
       prometheus_pvc+:: pvc.mixin.spec.resources.withRequests({ storage: '32Gi' }),
     },
   },
