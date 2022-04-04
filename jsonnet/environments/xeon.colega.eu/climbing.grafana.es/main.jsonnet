@@ -55,12 +55,7 @@ local middleware = import 'traefik/middleware.libsonnet';
           enabled: false,
         },
         users+: {
-          // https://climbing.grafana.es
           home_page: '/d/climbing-madrid/?kiosk=tv',
-        },
-        dashboards+: {
-          // hacky, this is where it will be mounted, unless there are too many dashboards in that folder and it might not be in 0.
-          // default_home_dashboard_path: '/grafana/dashboards-climbing/dashboards-climbing-0/climbing-madrid.json',
         },
       },
     })
