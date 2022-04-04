@@ -10,8 +10,6 @@ local middleware = import 'traefik/middleware.libsonnet';
     cluster_name: 'xeon.colega.eu',
     namespace: 'climbing-grafana-es',
 
-    prometheus_url: 'https://prometheus.colega.eu',
-
     grafana_admin_password_secret_name: 'grafana-admin-password',
   },
 
@@ -20,7 +18,9 @@ local middleware = import 'traefik/middleware.libsonnet';
   grafana_ingress: ingress.new(['climbing.grafana.es'])
                    + ingress.withService('grafana'),
 
-  prometheus_datasource:: grafana.datasource.new('prometheus', $._config.prometheus_url, type='prometheus', default=true),
+  prometheus_datasource:: grafana.datasource.new('Prometheus @ prometheus.colega.eu', 'https://prometheus.colega.eu', type='prometheus', default=true),
+  mimir_datasource:: grafana.datasource.new('Mimir @ mimir-reads.colega.eu', 'https://mimir-reads.colega.eu/prometheus', type='prometheus', default=false)
+                     + grafana.datasource.withBasicAuth('climbing', importstr 'mimir-reads-climbing.secret.password.txt'),
 
   grafana_admin_password_secret:
     k.core.v1.secret.new(
@@ -66,7 +66,8 @@ local middleware = import 'traefik/middleware.libsonnet';
     })
     + grafana.addFolder('Climbing')
     + grafana.addDashboard('climbing-madrid', (import 'dashboards/climbing-madrid.json'), folder='Climbing')
-    + grafana.addDatasource('prometheus', $.prometheus_datasource)
+    + grafana.addDatasource('prometheus.colega.eu', $.prometheus_datasource)
+    + grafana.addDatasource('mimir-reads.colega.eu', $.mimir_datasource)
     + grafana.withRootUrl('https://climbing.grafana.es'),
 
 
@@ -99,6 +100,16 @@ local middleware = import 'traefik/middleware.libsonnet';
       global: {
         scrape_interval: '60s',
       },
+      remote_write: [
+        {
+          name: 'climbing@mimir-writes.colega.eu',
+          url: 'https://mimir-writes.colega.eu/api/v1/push',
+          basic_auth: {
+            username: 'climbing',
+            password: importstr 'mimir-writes-climbing.secret.password.txt',
+          },
+        },
+      ],
     },
     scrape_configs:: {
       'sputnik-alcobendas-climbing': {
