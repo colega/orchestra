@@ -8,18 +8,39 @@
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
         "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
         "type": "dashboard"
       }
     ]
   },
   "editable": true,
+  "fiscalYearStartMonth": 0,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 11,
-  "links": [],
+  "links": [
+    {
+      "asDropdown": false,
+      "icon": "info",
+      "includeVars": false,
+      "keepTime": false,
+      "tags": [],
+      "targetBlank": true,
+      "title": "Source of the data",
+      "tooltip": "",
+      "type": "link",
+      "url": "https://cnecovid.isciii.es/covid19/"
+    }
+  ],
+  "liveNow": false,
   "panels": [
     {
       "datasource": "COVID-19 casos_tecnica_ccaa.csv",
+      "description": "Source: https://cnecovid.isciii.es/covid19/",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -179,7 +200,7 @@
     }
   ],
   "refresh": "",
-  "schemaVersion": 30,
+  "schemaVersion": 32,
   "style": "dark",
   "tags": [],
   "templating": {
