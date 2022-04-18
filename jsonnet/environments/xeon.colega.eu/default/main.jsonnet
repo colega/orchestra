@@ -1,5 +1,6 @@
 local k = import 'github.com/grafana/jsonnet-libs/ksonnet-util/kausal.libsonnet';
 local promtail = import 'github.com/grafana/loki/production/ksonnet/promtail/promtail.libsonnet';
+local mimir_mixin = import 'mimir-mixin/mixin.libsonnet';
 local prometheus = import 'prometheus-ksonnet/prometheus-ksonnet.libsonnet';
 local ingress = import 'traefik/ingress.libsonnet';
 local middleware = import 'traefik/middleware.libsonnet';
@@ -35,6 +36,10 @@ local secret = k.core.v1.secret;
         prometheus_limits_memory: '512Mi',
       },
       prometheus_pvc+:: pvc.mixin.spec.resources.withRequests({ storage: '32Gi' }),
+    },
+
+    mixins+:: {
+      mimir: mimir_mixin,
     },
   },
 

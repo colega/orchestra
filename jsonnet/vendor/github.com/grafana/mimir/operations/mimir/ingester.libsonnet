@@ -40,9 +40,6 @@
       // Close idle TSDBs.
       'blocks-storage.tsdb.close-idle-tsdb-timeout': $._config.queryConfig['querier.query-ingesters-within'],
 
-      // Disable TSDB isolation.
-      'blocks-storage.tsdb.isolation-enabled': 'false',
-
       // Persist ring tokens so that when the ingester will be restarted
       // it will pick the same tokens
       'ingester.ring.tokens-file-path': '/data/tokens',
@@ -93,6 +90,7 @@
     // rolled out one by one (the next pod will be rolled out once the previous is
     // ready).
     statefulSet.mixin.spec.withPodManagementPolicy('Parallel') +
+    (if !std.isObject($._config.node_selector) then {} else statefulSet.mixin.spec.template.spec.withNodeSelectorMixin($._config.node_selector)) +
     (if with_anti_affinity then $.util.antiAffinity else {}),
 
   ingester_statefulset: self.newIngesterStatefulSet('ingester', $.ingester_container, !$._config.ingester_allow_multiple_replicas_on_same_node),

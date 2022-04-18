@@ -115,6 +115,16 @@
       "source": {
         "git": {
           "remote": "https://github.com/grafana/jsonnet-libs.git",
+          "subdir": "mixin-utils"
+        }
+      },
+      "version": "28e90490f768aaf14d5bcb15ed2f6ab4e3efe725",
+      "sum": "v6fuqqQp9rHZbsxN9o79QzOpUlwYZEJ84DxTCZMCYeU="
+    },
+    {
+      "source": {
+        "git": {
+          "remote": "https://github.com/grafana/jsonnet-libs.git",
           "subdir": "nginx-directory"
         }
       },
@@ -188,8 +198,18 @@
           "subdir": "operations/mimir"
         }
       },
-      "version": "114ab88b50638a2047e2ca2a60640f6ca6fe8c17",
-      "sum": "MIOXlPCnNeCVX/c1fxZvtmkS+t4jc5fYXXxIOwWCBVE="
+      "version": "ba2e9a0ef577c9c6e77885609297a35f000c71e7",
+      "sum": "I2Sp2PmQ9hq7vu7FDEBJhLxy9MhA3jJEpHpff9AEY9k="
+    },
+    {
+      "source": {
+        "git": {
+          "remote": "https://github.com/grafana/mimir.git",
+          "subdir": "operations/mimir-mixin"
+        }
+      },
+      "version": "ba2e9a0ef577c9c6e77885609297a35f000c71e7",
+      "sum": "ih4IKfrzX2JVtEylUP4GDBz0lWHFJXqMOe8vn7gNnb4="
     },
     {
       "source": {

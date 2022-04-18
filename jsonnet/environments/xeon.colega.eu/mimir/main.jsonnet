@@ -14,6 +14,10 @@ local middleware = import 'traefik/middleware.libsonnet';
 mimir + scaling {
   namespace: k.core.v1.namespace.new($._config.namespace),
 
+  _images+:: {
+    mimir: 'grafana/mimir:r181-760e953',
+  },
+
   _config+:: {
     namespace: 'mimir',
     blocks_storage_backend: 'gcs',
