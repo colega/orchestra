@@ -54,12 +54,12 @@ mimir + scaling {
       volume.fromSecret(gcsCredentialsSecretName, gcsCredentialsSecretName),
     ]),
 
-  compactor_container+: gcsContainerCredentials,
-  ingester_container+: gcsContainerCredentials,
+  compactor_container+:: gcsContainerCredentials,
+  ingester_container+:: gcsContainerCredentials,
   ingester_statefulset+: gcsCredentialsVolume,
-  querier_container+: gcsContainerCredentials,
+  querier_container+:: gcsContainerCredentials,
   querier_deployment+: gcsCredentialsVolume,
-  store_gateway_container+: gcsContainerCredentials,
+  store_gateway_container+:: gcsContainerCredentials,
   store_gateway_statefulset+: gcsCredentialsVolume,
 
   consul: {},  // TODO: make mimir jsonnet skip consul if not needed.
