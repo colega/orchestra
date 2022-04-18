@@ -55,6 +55,7 @@ mimir + scaling {
     ]),
 
   compactor_container+:: gcsContainerCredentials,
+  compactor_statefulset+: gcsCredentialsVolume,
   ingester_container+:: gcsContainerCredentials,
   ingester_statefulset+: gcsCredentialsVolume,
   querier_container+:: gcsContainerCredentials,
