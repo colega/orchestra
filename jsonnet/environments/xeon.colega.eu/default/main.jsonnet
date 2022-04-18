@@ -85,6 +85,6 @@ local secret = k.core.v1.secret;
   grafanaAgentConfigMap:
     configMap.new('grafana-agent')
     + configMap.withData({
-      'agent.yaml': importstr 'grafana-agent.secret.agent.yaml',
+      'agent.yaml': k.util.manifestYaml(import 'grafana-agent.yaml.libsonnet'),
     }),
 }
