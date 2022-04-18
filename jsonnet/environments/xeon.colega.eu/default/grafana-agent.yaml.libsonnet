@@ -1,3 +1,4 @@
+// TODO mount secret as volume, use password_file instead.
 local password = importstr 'grafana-cloud-mykubernetes-writes-api-key.secret.api_key.yml';
 
 {
