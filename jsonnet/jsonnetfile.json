@@ -40,6 +40,15 @@
     {
       "source": {
         "git": {
+          "remote": "https://github.com/grafana/jsonnet-libs.git",
+          "subdir": "traefik-mixin"
+        }
+      },
+      "version": "master"
+    },
+    {
+      "source": {
+        "git": {
           "remote": "https://github.com/grafana/loki.git",
           "subdir": "production/ksonnet/promtail"
         }

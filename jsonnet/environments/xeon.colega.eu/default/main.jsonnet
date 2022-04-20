@@ -1,6 +1,7 @@
 local k = import 'github.com/grafana/jsonnet-libs/ksonnet-util/kausal.libsonnet';
 local promtail = import 'github.com/grafana/loki/production/ksonnet/promtail/promtail.libsonnet';
-local mimir_mixin = import 'mimir-mixin/mixin.libsonnet';
+local mimir_mixin = import 'github.com/grafana/mimir/operations/mimir-mixin/mixin.libsonnet';
+local traefik_mixin = import 'github.com/grafana/jsonnet-libs/traefik-mixin/mixin.libsonnet';
 local prometheus = import 'prometheus-ksonnet/prometheus-ksonnet.libsonnet';
 local ingress = import 'traefik/ingress.libsonnet';
 local middleware = import 'traefik/middleware.libsonnet';
@@ -40,6 +41,7 @@ local secret = k.core.v1.secret;
 
     mixins+:: {
       mimir: mimir_mixin,
+      traefik: traefik_mixin,
     },
   },
 
