@@ -1,14 +1,9 @@
-local promtail_scrape_config = import 'github.com/grafana/loki/production/ksonnet/promtail/scrape_config.libsonnet';
-
 {
   _config+:: {
     cluster: error 'must specify cluster',
     metrics_url: error 'must specify metrics url',
     metrics_tenant_id: error 'must specify metrics tenant',
     metrics_api_key_path: error 'must specify metrics api key path',
-    logs_url: error 'must specify logs url',
-    logs_tenant_id: error 'must specify logs tenant',
-    logs_api_key_path: error 'must specify metrics api key path',
   },
 
   grafana_agent_config+:: {
@@ -17,30 +12,6 @@ local promtail_scrape_config = import 'github.com/grafana/loki/production/ksonne
         {
           basic_auth: { username: $._config.metrics_tenant_id, password_file: $._config.metrics_api_key_path },
           url: $._config.metrics_url,
-        },
-      ],
-    },
-    logs: {
-      configs: [
-        {
-          name: 'integrations',
-          clients: [
-            {
-              basic_auth: { username: $._config.logs_tenant_id, password_file: $._config.logs_api_key_path },
-              external_labels: {
-                cluster: $._config.cluster,
-                scraper: 'grafana-agent',  // TODO: remove this once this actually pushes logs.
-              },
-              url: $._config.logs_url,
-            },
-          ],
-          positions: {
-            filename: '/tmp/positions.yaml',
-          },
-          target_config: {
-            sync_period: '10s',
-          },
-          scrape_configs: promtail_scrape_config.promtail_config.scrape_configs,
         },
       ],
     },

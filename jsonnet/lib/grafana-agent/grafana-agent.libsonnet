@@ -45,7 +45,6 @@ agent_config {
       namespace: $._config.namespace,
     }),
 
-
   container::
     container.new('agent', $._images.grafana_agent)
     + container.withCommand(['/bin/agent'])
@@ -56,7 +55,6 @@ agent_config {
     + container.withArgsMixin([
       '-config.file=/etc/agent/agent.yaml',
     ]),
-
 
   config_map:
     configMap.new('grafana-agent')
