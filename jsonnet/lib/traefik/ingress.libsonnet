@@ -10,7 +10,7 @@ local middleware = import 'middleware.libsonnet';
       middlewares:: [],
       services:: [],
       host_matcher:: std.join(' || ', ['Host(`%s`)' % domain for domain in domains]),
-      extra_matcher:: '',
+      extra_routes:: [],
 
       certificate: {
         apiVersion: 'cert-manager.io/v1',
@@ -39,10 +39,18 @@ local middleware = import 'middleware.libsonnet';
           routes: [
             {
               kind: 'Rule',
-              match: if (this.extra_matcher == '') then this.host_matcher else '(%(host_matcher)s) && (%(extra_matcher)s)' % {
+              match: '(%(host_matcher)s) && PathPrefix(`%(prefix)s`)' % {
                 host_matcher: this.host_matcher,
-                extra_matcher: this.extra_matcher,
+                prefix: route.prefix,
               },
+              services: route.services,
+              middlewares: this.middlewares,
+            }
+            for route in this.extra_routes
+          ] + [
+            {
+              kind: 'Rule',
+              match: this.host_matcher,
               services: this.services,
               middlewares: this.middlewares,
             },
@@ -90,7 +98,10 @@ local middleware = import 'middleware.libsonnet';
     services+:: [{ kind: 'Service', namespace: namespace, name: name, port: port }],
   },
 
-  matching(matcher):: {
-    extra_matcher: matcher,
+  withRoutePrefixService(serviceName, prefix, port='http', namespace=null):: {
+    extra_routes+:: [{
+      services: [{ kind: 'Service', namespace: namespace, name: serviceName, port: port }],
+      prefix: prefix,
+    }],
   },
 }
