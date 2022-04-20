@@ -50,6 +50,22 @@ local grafana_agent = import 'grafana-agent/grafana-agent.libsonnet';
       prometheus_pvc+:: pvc.mixin.spec.resources.withRequests({ storage: '32Gi' }),
     },
 
+    prometheus_config+: {
+      scrape_configs: [
+        config {
+          relabel_configs+:
+            [
+              {
+                // Add 'cluster' label to all metrics, this is required by some Grafana-authored mixins like mimir-mixin.
+                target_label: 'cluster',
+                replacement: $._config.cluster_name,
+              },
+            ],
+        }
+        for config in super.scrape_configs
+      ],
+    },
+
     mixins+:: {
       mimir: mimir_mixin,
       traefik: traefik_mixin,
