@@ -11,7 +11,7 @@ local k = import 'github.com/grafana/jsonnet-libs/ksonnet-util/kausal.libsonnet'
 
 {
   _images+:: {
-    grafana_agent: 'grafana/agent:v0.23.0',
+    grafana_agent: 'grafana/agent',
   },
 
   _config+:: {

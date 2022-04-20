@@ -18,6 +18,7 @@ local grafana_agent = import 'grafana-agent/grafana-agent.libsonnet';
   },
   _images+:: {
     promtail: 'grafana/promtail:2.4.2',
+    grafana_agent: 'grafana/agent:v0.23.0',
   },
 
   namespace: k.core.v1.namespace.new($._config.namespace),
