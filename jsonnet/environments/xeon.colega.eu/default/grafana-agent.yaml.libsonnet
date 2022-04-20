@@ -1,11 +1,10 @@
-// TODO mount secret as volume, use password_file instead.
-local password = importstr 'grafana-cloud-mykubernetes-writes-api-key.secret.api_key.yml';
-
 {
+  api_key_path:: 'error must specify api key path',
+
   integrations: {
     prometheus_remote_write: [
       {
-        basic_auth: { username: 312426, password: password },
+        basic_auth: { username: 312426, password_file: $.api_key_path },
         url: 'https://prometheus-prod-01-eu-west-0.grafana.net/api/prom/push',
       },
     ],
@@ -15,7 +14,7 @@ local password = importstr 'grafana-cloud-mykubernetes-writes-api-key.secret.api
       {
         clients: [
           {
-            basic_auth: { username: 155183, password: password },
+            basic_auth: { username: 155183, password_file: $.api_key_path },
             external_labels: { cluster: 'cloud' },
             url: 'https://logs-prod-eu-west-0.grafana.net/api/prom/push',
           },
@@ -36,7 +35,7 @@ local password = importstr 'grafana-cloud-mykubernetes-writes-api-key.secret.api
         name: 'integrations',
         remote_write: [
           {
-            basic_auth: { username: 312426, password: password },
+            basic_auth: { username: 312426, password_file: $.api_key_path },
             url: 'https://prometheus-prod-01-eu-west-0.grafana.net/api/prom/push',
           },
         ],
