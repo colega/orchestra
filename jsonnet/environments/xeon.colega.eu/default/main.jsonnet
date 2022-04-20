@@ -55,19 +55,21 @@ local grafana_agent = import 'grafana-agent/grafana-agent.libsonnet';
     },
   },
 
-  grafana_ingress: ingress.new(['grafana.grafana.me'])
-                   + ingress.withMiddleware('basic-auth')
-                   + ingress.withService('grafana'),
-  prometheus_ingress: ingress.new(['prometheus.grafana.me'])
-                      + ingress.withMiddleware('basic-auth')
-                      + ingress.withService('prometheus', 9090),
+  ingress: {
+    local basicAuthSecretName = 'basic-auth',
+    basic_auth_secret: secret.new(
+      basicAuthSecretName,
+      { users: std.base64(importstr 'basic-auth.secret.users.htpasswd') }
+    ),
+    basic_auth: middleware.newBasicAuth(secretName=basicAuthSecretName),
 
-  local basicAuthSecretName = 'basic-auth',
-  basic_auth_secret: secret.new(
-    basicAuthSecretName,
-    { users: std.base64(importstr 'basic-auth.secret.users.htpasswd') }
-  ),
-  basic_auth: middleware.newBasicAuth(secretName=basicAuthSecretName),
+    grafana: ingress.new(['grafana.grafana.me'])
+             + ingress.withMiddleware('basic-auth')
+             + ingress.withService('grafana'),
+    prometheus: ingress.new(['prometheus.grafana.me'])
+                + ingress.withMiddleware('basic-auth')
+                + ingress.withService('prometheus', 9090),
+  },
 
   promtail: promtail {
     _config+:: $._config,
