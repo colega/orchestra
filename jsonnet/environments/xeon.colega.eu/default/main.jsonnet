@@ -12,7 +12,6 @@ local prometheus = import 'prometheus-ksonnet/prometheus-ksonnet.libsonnet';
 local ingress = import 'traefik/ingress.libsonnet';
 local middleware = import 'traefik/middleware.libsonnet';
 local grafana_agent = import 'grafana-agent/grafana-agent.libsonnet';
-local grafana_agent_yaml = import 'grafana-agent.yaml.libsonnet';
 
 {
   _config+:: {
@@ -44,9 +43,13 @@ local grafana_agent_yaml = import 'grafana-agent.yaml.libsonnet';
     _images+:: $._images,
     _config+:: {
       namespace: $._config.namespace,
-      grafana_agent_yaml: grafana_agent_yaml {
-        api_key_path: $.grafana_cloud_api_key.full_path,
-      },
+      cluster: $._config.cluster_name,
+      metrics_url: 'https://prometheus-prod-01-eu-west-0.grafana.net/api/prom/push',
+      metrics_tenant_id: 312426,
+      metrics_api_key_path: $.grafana_cloud_api_key.full_path,
+      logs_url: 'https://logs-prod-eu-west-0.grafana.net/api/prom/push',
+      logs_tenant_id: 155183,
+      logs_api_key_path: $.grafana_cloud_api_key.full_path,
     },
     deployment+: $.grafana_cloud_api_key.secret_volume_mount_mixin,
   },
@@ -107,6 +110,7 @@ local grafana_agent_yaml = import 'grafana-agent.yaml.libsonnet';
                 + ingress.withService('prometheus', 9090),
   },
 
+  // TODO: remove this promtail config once we've fixed grafana-agent
   promtail: promtail {
     _config+:: $._config,
     promtail_config+:: {
@@ -114,8 +118,9 @@ local grafana_agent_yaml = import 'grafana-agent.yaml.libsonnet';
         url: 'https://logs-prod-eu-west-0.grafana.net/loki/api/v1/push',
         basic_auth: {
           username: '155183',
-          password_file: '/etc/promtail_auth/api_key.yml',
+          password_file: $.grafana_cloud_api_key.full_path,
         },
+        external_labels: { scraper: 'promtail' },
       }],
     },
     _images+:: $._images,

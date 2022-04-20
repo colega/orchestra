@@ -9,13 +9,15 @@ local k = import 'github.com/grafana/jsonnet-libs/ksonnet-util/kausal.libsonnet'
       roleBinding = k.rbac.v1.roleBinding,
       serviceAccount = k.core.v1.serviceAccount;
 
-{
+local agent_config = import 'grafana-agent-config.libsonnet';
+
+agent_config {
   _images+:: {
     grafana_agent: 'grafana/agent',
   },
 
   _config+:: {
-    grafana_agent_yaml: error 'must provide grafana_agent_yaml contents (as an object to be rendered as YAML)',
+    namespace: error 'must specify namespace',
   },
 
   service_account: serviceAccount.new('grafana-agent'),
@@ -48,9 +50,6 @@ local k = import 'github.com/grafana/jsonnet-libs/ksonnet-util/kausal.libsonnet'
     container.new('agent', $._images.grafana_agent)
     + container.withCommand(['/bin/agent'])
     + container.withPorts(containerPort.new('http-metrics', 12345))
-    //    + container.withVolumeMountsMixin([
-    //      k.core.v1.volumeMount.new('grafana-agent', '/etc/agent'),
-    //    ])
     + container.withEnvMixin([
       { name: 'HOSTNAME', valueFrom: { fieldRef: { fieldPath: 'spec.nodeName' } } },
     ])
@@ -62,7 +61,7 @@ local k = import 'github.com/grafana/jsonnet-libs/ksonnet-util/kausal.libsonnet'
   config_map:
     configMap.new('grafana-agent')
     + configMap.withData({
-      'agent.yaml': k.util.manifestYaml($._config.grafana_agent_yaml),
+      'agent.yaml': k.util.manifestYaml($.grafana_agent_config),
     }),
 
   deployment:
