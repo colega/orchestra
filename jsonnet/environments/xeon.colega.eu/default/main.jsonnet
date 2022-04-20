@@ -1,14 +1,15 @@
-local k = import 'github.com/grafana/jsonnet-libs/ksonnet-util/kausal.libsonnet';
+local k = import 'github.com/grafana/jsonnet-libs/ksonnet-util/kausal.libsonnet',
+      configMap = k.core.v1.configMap,
+      pvc = k.core.v1.persistentVolumeClaim,
+      secret = k.core.v1.secret;
+
 local promtail = import 'github.com/grafana/loki/production/ksonnet/promtail/promtail.libsonnet';
 local mimir_mixin = import 'github.com/grafana/mimir/operations/mimir-mixin/mixin.libsonnet';
 local traefik_mixin = import 'github.com/grafana/jsonnet-libs/traefik-mixin/mixin.libsonnet';
 local prometheus = import 'prometheus-ksonnet/prometheus-ksonnet.libsonnet';
 local ingress = import 'traefik/ingress.libsonnet';
 local middleware = import 'traefik/middleware.libsonnet';
-
-local configMap = k.core.v1.configMap;
-local pvc = k.core.v1.persistentVolumeClaim;
-local secret = k.core.v1.secret;
+local grafana_agent = import 'grafana-agent/grafana-agent.libsonnet';
 
 {
   _config+:: {
@@ -20,6 +21,15 @@ local secret = k.core.v1.secret;
   },
 
   namespace: k.core.v1.namespace.new($._config.namespace),
+
+  // See lib/grafana-agent
+  grafana_agent: grafana_agent {
+    _images+:: $._images,
+    _config+:: {
+      namespace: $._config.namespace,
+      grafana_agent_yaml: import 'grafana-agent.yaml.libsonnet',
+    },
+  },
 
   // This is not just a prometheus, it's also a grafana, rules, dashboards, etc.
   prometheus: prometheus {
@@ -81,12 +91,4 @@ local secret = k.core.v1.secret;
     promtail_daemonset+:
       k.util.configVolumeMount('grafana-cloud-mykubernetes-writes-api-key', '/etc/promtail_auth'),
   },
-
-  // There's also a grafana-agent here installed from plain helmchart using Grafana Cloud Kubernetes integration instructions.
-  // That is not handled by tanka.
-  grafanaAgentConfigMap:
-    configMap.new('grafana-agent')
-    + configMap.withData({
-      'agent.yaml': k.util.manifestYaml(import 'grafana-agent.yaml.libsonnet'),
-    }),
 }

@@ -1,10 +1,10 @@
 local k = import 'github.com/grafana/jsonnet-libs/ksonnet-util/kausal.libsonnet';
 
-local mimir = import 'mimir/mimir.libsonnet';
-local scaling = import 'scaling.libsonnet';
 local credentials = import 'credentials.libsonnet';
-local ring = import 'ring.libsonnet';
 local ingress = import 'ingress.libsonnet';
+local mimir = import 'mimir/mimir.libsonnet';
+local ring = import 'ring.libsonnet';
+local scaling = import 'scaling.libsonnet';
 
 mimir + scaling + credentials + ring + ingress {
   namespace: k.core.v1.namespace.new($._config.namespace),
