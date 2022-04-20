@@ -18,8 +18,7 @@ local middleware = import 'traefik/middleware.libsonnet';
   grafana_ingress: ingress.new(['climbing.grafana.es'])
                    + ingress.withService('grafana'),
 
-  prometheus_datasource:: grafana.datasource.new('Prometheus @ prometheus.colega.eu', 'https://prometheus.colega.eu', type='prometheus', default=true),
-  mimir_datasource:: grafana.datasource.new('Mimir @ mimir-reads.colega.eu', 'https://mimir-reads.colega.eu/prometheus', type='prometheus', default=false)
+  mimir_datasource:: grafana.datasource.new('climbing @ mimir-reads.colega.eu', 'https://mimir-reads.colega.eu/prometheus', type='prometheus', default=true)
                      + grafana.datasource.withBasicAuth('climbing', importstr 'mimir-reads-climbing.secret.password.txt'),
 
   grafana_admin_password_secret:
@@ -61,7 +60,6 @@ local middleware = import 'traefik/middleware.libsonnet';
     })
     + grafana.addFolder('Climbing')
     + grafana.addDashboard('climbing-madrid', (import 'dashboards/climbing-madrid.json'), folder='Climbing')
-    + grafana.addDatasource('prometheus.colega.eu', $.prometheus_datasource)
     + grafana.addDatasource('mimir-reads.colega.eu', $.mimir_datasource)
     + grafana.withRootUrl('https://climbing.grafana.es'),
 

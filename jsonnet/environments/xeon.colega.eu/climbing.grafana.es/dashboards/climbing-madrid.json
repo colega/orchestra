@@ -17,7 +17,7 @@
         "type": "dashboard"
       },
       {
-        "datasource": "Prometheus @ prometheus.colega.eu",
+        "datasource": "climbing @ mimir-reads.colega.eu",
         "enable": true,
         "expr": "vector(1) and (day_of_week(vector(time() + 3600)) * (day_of_week(vector(time() + 3600)) - 6) == 0)",
         "iconColor": "super-light-blue",
@@ -40,7 +40,7 @@
   "liveNow": false,
   "panels": [
     {
-      "datasource": null,
+      "datasource": "climbing @ mimir-reads.colega.eu",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -161,7 +161,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sputnik_people",
+          "expr": "climbing_gym_people{name=\"Sputnik Alcobendas\"}",
           "interval": "",
           "legendFormat": "Occupation",
           "queryType": "randomWalk",
@@ -169,7 +169,7 @@
         },
         {
           "exemplar": true,
-          "expr": "sputnik_capacity",
+          "expr": "climbing_gym_capacity{name=\"Sputnik Alcobendas\", type=\"soft\"}",
           "interval": "",
           "legendFormat": "Capacity",
           "refId": "B"
@@ -181,7 +181,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": null,
+      "datasource": "climbing @ mimir-reads.colega.eu",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -302,7 +302,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sputnik_lasrozas_people",
+          "expr": "climbing_gym_people{name=\"Sputnik Las Rozas\"}",
           "interval": "",
           "legendFormat": "Occupation",
           "queryType": "randomWalk",
@@ -310,7 +310,7 @@
         },
         {
           "exemplar": true,
-          "expr": "sputnik_lasrozas_capacity",
+          "expr": "climbing_gym_capacity{name=\"Sputnik Las Rozas\", type=\"soft\"}",
           "interval": "",
           "legendFormat": "Capacity",
           "refId": "B"
