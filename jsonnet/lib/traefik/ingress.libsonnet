@@ -61,7 +61,6 @@ local middleware = import 'middleware.libsonnet';
         },
       },
 
-
       http: {
         apiVersion: 'traefik.containo.us/v1alpha1',
         kind: 'IngressRoute',
@@ -74,12 +73,8 @@ local middleware = import 'middleware.libsonnet';
             {
               kind: 'Rule',
               match: this.host_matcher,
-              services: [
-                { kind: 'Service', namespace: 'traefik', name: 'noop-nginx', port: 'http' },
-              ],
-              middlewares: [
-                { name: middleware.redirectToHTTPSDefaultName, namespace: 'traefik' },
-              ],
+              services: [{ kind: 'TraefikService', name: 'noop@internal' }],
+              middlewares: [{ name: middleware.redirectToHTTPSDefaultName, namespace: 'traefik' }],
             },
           ],
         },
