@@ -2,18 +2,7 @@
 // https://github.com/grafana/jsonnet-libs/blob/master/cert-manager/default_clusterissuers.libsonnet
 // But updated api version
 {
-
-  withDefaultIssuer(name, kind='ClusterIssuer', group='cert-manager.io'):: {
-    values+:: {
-      ingressShim: {
-        defaultIssuerName: name,
-        defaultIssuerKind: kind,
-        defaultIssuerGroup: group,
-      },
-    },
-  },
-
-  clusterIssuer:: {
+  cluster_issuer:: {
     new(name): {
       apiVersion: 'cert-manager.io/v1',
       kind: 'ClusterIssuer',
@@ -66,24 +55,5 @@
         },
       },
     },
-  },
-
-  // backward compat
-  values+:: {
-    ingressShim:
-      {
-        defaultIssuerKind: 'ClusterIssuer',
-      }
-
-      + (
-        if $._config.default_issuer != null
-        then { defaultIssuerName: $._config.default_issuer }
-        else {}
-      )
-      + (
-        if $._config.default_issuer_group != null
-        then { defaultIssuerGroup: $._config.default_issuer_group }
-        else {}
-      ),
   },
 }
