@@ -25,10 +25,4 @@ mimir + scaling + credentials + ring + ingress {
     store_gateway_data_disk_class: 'local-path',  // k3s magic provisioned by rancher.io/local-path
     store_gateway_data_disk_size: '8Gi',
   },
-
-  consul: null,  // TODO: make mimir jsonnet skip consul if not needed.
-  etcd: null,  // TODO: I don't have etcd, so I can't enable this
-  distributor_args+:: {
-    'distributor.ha-tracker.enable': false,  // TODO: I don't have etcd, so I can't enable this
-  },
 }
