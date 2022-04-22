@@ -11,8 +11,6 @@ local helm = tanka.helm.new(std.thisFile);
       additionalArguments: [
         '--api.dashboard=true',
         '--log.level=DEBUG',
-        //'--providers.kubernetesingress.ingressclass=traefik-internal',
-        '--serversTransport.insecureSkipVerify=true',
         '--providers.kubernetescrd.allowCrossNamespace=true',
       ],
       // Prometheus metrics port should end in `-metrics` in order to be scraped.
