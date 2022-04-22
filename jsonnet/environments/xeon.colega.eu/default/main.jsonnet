@@ -23,7 +23,7 @@ local grafana_cloud_o11y = import 'grafana_cloud_o11y.libsonnet';
   // This is not just a prometheus, it's also a grafana, rules, dashboards, etc.
   prometheus: prometheus {
     _config+:: $._config {
-      grafana_root_url: 'https://grafana.grafana.me',
+      grafana_root_url: 'https://grafana.xeon.colega.eu',
     },
     // Increase the default 200m to avoid cpu throttling alert.
     node_exporter_container+:: k.util.resourcesLimits('500m', '100Mi'),
@@ -68,10 +68,10 @@ local grafana_cloud_o11y = import 'grafana_cloud_o11y.libsonnet';
     ),
     basic_auth: middleware.newBasicAuth(secretName=basicAuthSecretName),
 
-    grafana: ingress.new(['grafana.grafana.me'])
+    grafana: ingress.new(['grafana.xeon.colega.eu'])
              + ingress.withMiddleware('basic-auth')
              + ingress.withService('grafana'),
-    prometheus: ingress.new(['prometheus.grafana.me'])
+    prometheus: ingress.new(['prometheus.xeon.colega.eu'])
                 + ingress.withMiddleware('basic-auth')
                 + ingress.withService('prometheus', 9090),
   },
