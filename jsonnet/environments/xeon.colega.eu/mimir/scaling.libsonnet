@@ -5,9 +5,10 @@ local k = import 'github.com/grafana/jsonnet-libs/ksonnet-util/kausal.libsonnet'
   _config+:: {
     distributor_allow_multiple_replicas_on_same_node: true,
     ingester_allow_multiple_replicas_on_same_node: true,
-    ruler_allow_multiple_replicas_on_same_node: true,
     querier_allow_multiple_replicas_on_same_node: true,
     query_frontend_allow_multiple_replicas_on_same_node: true,
+    ruler_allow_multiple_replicas_on_same_node: true,
+    store_gateway_allow_multiple_replicas_on_same_node: true,
   },
 
   compactor_container+:: k.util.resourcesRequests('100m', '128Mi'),
