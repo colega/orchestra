@@ -24,5 +24,4 @@ local secret = k.core.v1.secret;
     { users: std.base64(importstr 'basic-auth.secret.users.htpasswd') }
   ),
   basic_auth: middleware.newBasicAuth(secretName=basicAuthSecretName),
-  redirect_to_https: middleware.newRedirectToHTTPS(),
 }

@@ -61,6 +61,24 @@ local middleware = import 'middleware.libsonnet';
         },
       },
 
+      local redirectToHTTPSMiddlewareName = name + '-redirect-to-https',
+
+      redirect_to_https_middleware: {
+        apiVersion: 'traefik.containo.us/v1alpha1',
+        kind: 'Middleware',
+
+        metadata: {
+          name: redirectToHTTPSMiddlewareName,
+        },
+
+        spec: {
+          redirectScheme: {
+            scheme: 'https',
+            permanent: true,
+          },
+        },
+      },
+
       http: {
         apiVersion: 'traefik.containo.us/v1alpha1',
         kind: 'IngressRoute',
@@ -74,7 +92,7 @@ local middleware = import 'middleware.libsonnet';
               kind: 'Rule',
               match: this.host_matcher,
               services: [{ kind: 'TraefikService', name: 'noop@internal' }],
-              middlewares: [{ name: middleware.redirectToHTTPSDefaultName, namespace: 'traefik' }],
+              middlewares: [{ name: redirectToHTTPSMiddlewareName }],
             },
           ],
         },
