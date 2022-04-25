@@ -10,7 +10,7 @@ mimir + scaling + credentials + ring + ingress {
   namespace: k.core.v1.namespace.new($._config.namespace),
 
   _images+:: {
-    mimir: 'grafana/mimir:r181-760e953',
+    mimir: 'grafana/mimir:r183-5299284',
   },
 
   _config+:: {
