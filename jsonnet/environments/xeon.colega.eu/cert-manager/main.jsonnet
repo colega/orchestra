@@ -1,7 +1,9 @@
-local cert_manager = import 'cert-manager/cert-manager.libsonnet';
 local k = import 'github.com/grafana/jsonnet-libs/ksonnet-util/kausal.libsonnet';
 
-cert_manager {
+local cert_manager = import 'cert-manager/cert-manager.libsonnet';
+local cluster_issuers = import 'cert-manager/cluster-issuers.libsonnet';
+
+cert_manager + cluster_issuers {
   _config:: {
     namespace: 'cert-manager',
     issuer_email: 'mail@olegzaytsev.com',

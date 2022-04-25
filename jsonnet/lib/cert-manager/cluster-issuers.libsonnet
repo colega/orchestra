@@ -2,6 +2,13 @@
 // https://github.com/grafana/jsonnet-libs/blob/master/cert-manager/default_clusterissuers.libsonnet
 // But updated api version
 {
+  cluster_issuer_selfsigned:
+    $.cluster_issuer.new('selfsigned') + {
+      spec: {
+        selfSigned: {},
+      },
+    },
+
   cluster_issuer:: {
     new(name): {
       apiVersion: 'cert-manager.io/v1',
