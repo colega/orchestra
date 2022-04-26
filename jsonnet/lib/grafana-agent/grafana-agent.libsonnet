@@ -64,5 +64,6 @@ agent_config {
 
   deployment:
     deployment.new('grafana-agent', 1, [$.container])
+    + deployment.mixin.spec.template.spec.withServiceAccount('grafana-agent')
     + k.util.configMapVolumeMount($.config_map, '/etc/agent'),
 }
