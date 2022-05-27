@@ -23,7 +23,8 @@ local middleware = import 'traefik/middleware.libsonnet';
 
       ingress: ingress.new(['mimir-writes.colega.eu'])
                + ingress.withMiddleware(authMiddlewareName)
-               + ingress.withService('distributor', 8080),
+               + ingress.withService('distributor', 8080)
+               + ingress.withRoutePrefixService('json-write-proxy', '/api/v1/json/push', port=9091),
     },
 
     admin: {

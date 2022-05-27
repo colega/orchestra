@@ -5,8 +5,9 @@ local ingress = import 'ingress.libsonnet';
 local mimir = import 'mimir/mimir.libsonnet';
 local ring = import 'ring.libsonnet';
 local scaling = import 'scaling.libsonnet';
+local json_write_proxy = import 'json_write_proxy.libsonnet';
 
-mimir + scaling + credentials + ring + ingress {
+mimir + scaling + credentials + ring + ingress + json_write_proxy {
   namespace: k.core.v1.namespace.new($._config.namespace),
 
   _images+:: {
