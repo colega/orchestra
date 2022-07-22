@@ -1,8 +1,9 @@
 local utils = import 'mixin-utils/utils.libsonnet';
+local filename = 'mimir-queries.json';
 
 (import 'dashboard-utils.libsonnet') {
-  'mimir-queries.json':
-    ($.dashboard('Queries') + { uid: 'd9931b1054053c8b972d320774bb8f1d' })
+  [filename]:
+    ($.dashboard('Queries') + { uid: std.md5(filename) })
     .addClusterSelectorTemplates()
     .addRow(
       $.row('Query-frontend')
@@ -54,8 +55,8 @@ local utils = import 'mixin-utils/utils.libsonnet';
     .addRow(
       $.row('Query-frontend - query splitting and results cache')
       .addPanel(
-        $.panel('Intervals per Query') +
-        $.queryPanel('sum(rate(cortex_frontend_split_queries_total{%s}[1m])) / sum(rate(cortex_frontend_query_range_duration_seconds_count{%s, method="split_by_interval"}[1m]))' % [$.jobMatcher($._config.job_names.query_frontend), $.jobMatcher($._config.job_names.query_frontend)], 'splitting rate') +
+        $.panel('Intervals per query') +
+        $.queryPanel('sum(rate(cortex_frontend_split_queries_total{%s}[$__rate_interval])) / sum(rate(cortex_frontend_query_range_duration_seconds_count{%s, method="split_by_interval_and_results_cache"}[$__rate_interval]))' % [$.jobMatcher($._config.job_names.query_frontend), $.jobMatcher($._config.job_names.query_frontend)], 'splitting rate') +
         $.panelDescription(
           'Intervals per query',
           |||
@@ -64,48 +65,48 @@ local utils = import 'mixin-utils/utils.libsonnet';
         ),
       )
       .addPanel(
-        $.panel('Results cache hit %') +
+        $.panel('Query results cache hit ratio') +
         $.queryPanel(
           |||
             # Query metrics before and after migration to new memcached backend.
             sum (
-              rate(cortex_cache_hits{name=~"frontend.+", %(frontend)s}[1m])
+              rate(cortex_cache_hits{name=~"frontend.+", %(frontend)s}[$__rate_interval])
               or
-              rate(thanos_cache_memcached_hits_total{name="frontend-cache", %(frontend)s}[1m])
+              rate(thanos_cache_memcached_hits_total{name="frontend-cache", %(frontend)s}[$__rate_interval])
             )
             /
             sum (
-              rate(cortex_cache_fetched_keys{name=~"frontend.+", %(frontend)s}[1m])
+              rate(cortex_cache_fetched_keys{name=~"frontend.+", %(frontend)s}[$__rate_interval])
               or
-              rate(thanos_cache_memcached_requests_total{name=~"frontend-cache", %(frontend)s}[1m])
+              rate(thanos_cache_memcached_requests_total{name=~"frontend-cache", %(frontend)s}[$__rate_interval])
             )
           ||| % {
             frontend: $.jobMatcher($._config.job_names.query_frontend),
           },
-          'Hit rate',
+          'Hit ratio',
         ) +
         { yaxes: $.yaxes({ format: 'percentunit', max: 1 }) },
       )
       .addPanel(
-        $.panel('Results cache misses') +
+        $.panel('Query results cache misses') +
         $.queryPanel(
           |||
             # Query metrics before and after migration to new memcached backend.
             sum (
-              rate(cortex_cache_fetched_keys{name=~"frontend.+", %(frontend)s}[1m])
+              rate(cortex_cache_fetched_keys{name=~"frontend.+", %(frontend)s}[$__rate_interval])
               or
-              rate(thanos_cache_memcached_requests_total{name="frontend-cache", %(frontend)s}[1m])
+              rate(thanos_cache_memcached_requests_total{name="frontend-cache", %(frontend)s}[$__rate_interval])
             )
             -
             sum (
-              rate(cortex_cache_hits{name=~"frontend.+", %(frontend)s}[1m])
+              rate(cortex_cache_hits{name=~"frontend.+", %(frontend)s}[$__rate_interval])
               or
-              rate(thanos_cache_memcached_hits_total{name=~"frontend-cache", %(frontend)s}[1m])
+              rate(thanos_cache_memcached_hits_total{name=~"frontend-cache", %(frontend)s}[$__rate_interval])
             )
           ||| % {
             frontend: $.jobMatcher($._config.job_names.query_frontend),
           },
-          'Miss rate'
+          'Missed query results per second'
         ),
       )
     )
@@ -156,11 +157,6 @@ local utils = import 'mixin-utils/utils.libsonnet';
         { yaxes: $.yaxes('short') },
       )
       .addPanel(
-        $.panel('Chunks per query') +
-        utils.latencyRecordingRulePanel('cortex_ingester_queried_chunks', $.jobSelector($._config.job_names.ingester), multiplier=1) +
-        { yaxes: $.yaxes('short') },
-      )
-      .addPanel(
         $.panel('Samples per query') +
         utils.latencyRecordingRulePanel('cortex_ingester_queried_samples', $.jobSelector($._config.job_names.ingester), multiplier=1) +
         { yaxes: $.yaxes('short') },
@@ -185,7 +181,7 @@ local utils = import 'mixin-utils/utils.libsonnet';
       )
       .addPanel(
         $.panel('Consistency checks failed') +
-        $.queryPanel('sum(rate(cortex_querier_blocks_consistency_checks_failed_total{%s}[1m])) / sum(rate(cortex_querier_blocks_consistency_checks_total{%s}[1m]))' % [$.jobMatcher($._config.job_names.querier), $.jobMatcher($._config.job_names.querier)], 'Failure Rate') +
+        $.queryPanel('sum(rate(cortex_querier_blocks_consistency_checks_failed_total{%s}[$__rate_interval])) / sum(rate(cortex_querier_blocks_consistency_checks_total{%s}[$__rate_interval]))' % [$.jobMatcher($._config.job_names.querier), $.jobMatcher($._config.job_names.querier)], 'Failure Rate') +
         { yaxes: $.yaxes({ format: 'percentunit', max: 1 }) },
       )
     )
@@ -251,7 +247,8 @@ local utils = import 'mixin-utils/utils.libsonnet';
       $.row('')
       .addPanel(
         $.panel('Blocks currently loaded') +
-        $.queryPanel('cortex_bucket_store_blocks_loaded{component="store-gateway",%s}' % $.jobMatcher($._config.job_names.store_gateway), '{{%s}}' % $._config.per_instance_label)
+        $.queryPanel('cortex_bucket_store_blocks_loaded{component="store-gateway",%s}' % $.jobMatcher($._config.job_names.store_gateway), '{{%s}}' % $._config.per_instance_label) +
+        { fill: 0 }
       )
       .addPanel(
         $.successFailurePanel(
@@ -272,7 +269,8 @@ local utils = import 'mixin-utils/utils.libsonnet';
       $.row('')
       .addPanel(
         $.panel('Lazy loaded index-headers') +
-        $.queryPanel('cortex_bucket_store_indexheader_lazy_load_total{%s} - cortex_bucket_store_indexheader_lazy_unload_total{%s}' % [$.jobMatcher($._config.job_names.store_gateway), $.jobMatcher($._config.job_names.store_gateway)], '{{%s}}' % $._config.per_instance_label)
+        $.queryPanel('cortex_bucket_store_indexheader_lazy_load_total{%s} - cortex_bucket_store_indexheader_lazy_unload_total{%s}' % [$.jobMatcher($._config.job_names.store_gateway), $.jobMatcher($._config.job_names.store_gateway)], '{{%s}}' % $._config.per_instance_label) +
+        { fill: 0 }
       )
       .addPanel(
         $.panel('Index-header lazy load duration') +

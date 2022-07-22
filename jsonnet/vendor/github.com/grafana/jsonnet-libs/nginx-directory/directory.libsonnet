@@ -25,6 +25,8 @@ local link_data = import 'link_data.libsonnet';
       redirect: false,
       allowWebsockets: false,
       subfilter: false,
+      // subfilter_content_types configures the content types handled by the subfilter (nginx sub_filter_types directive).
+      subfilter_content_types: ['text/css', 'application/xml', 'application/json', 'application/javascript'],
       custom: [],
 
       // backwards compatible, service level config allows for more granular configuration
@@ -63,7 +65,7 @@ local link_data = import 'link_data.libsonnet';
   nginx_service:
     k.util.serviceFor(this.nginx_deployment),
 
-  withOAuth2Proxy(config):: {
+  withOAuth2Proxy(config, images={}):: {
     local oauth2_proxy = import 'oauth2-proxy/oauth2-proxy.libsonnet',
 
     oauth2_proxy:
@@ -71,12 +73,16 @@ local link_data = import 'link_data.libsonnet';
         _config+:: config {
           oauth_upstream: 'http://nginx.%(namespace)s.svc.%(cluster_dns_suffix)s/' % config,
         },
+        _images+:: images,
       },
   },
 
   // backwards compatible
   oauth2_proxy:
     if this._config.oauth_enabled
-    then this.withOAuth2Proxy(this._config).oauth2_proxy
+    then this.withOAuth2Proxy(
+      this._config,
+      images=if std.objectHasAll(this, '_images') then this._images else {}
+    ).oauth2_proxy
     else {},
 }

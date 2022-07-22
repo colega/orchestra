@@ -14,7 +14,7 @@
             severity: 'critical',
           },
           annotations: {
-            message: '%(product)s Compactor {{ $labels.instance }} in %(alert_aggregation_variables)s has not successfully cleaned up blocks in the last 6 hours.' % $._config,
+            message: '%(product)s Compactor %(alert_instance_variable)s in %(alert_aggregation_variables)s has not successfully cleaned up blocks in the last 6 hours.' % $._config,
           },
         },
         {
@@ -28,9 +28,10 @@
           |||,
           labels: {
             severity: 'critical',
+            reason: 'in-last-24h',
           },
           annotations: {
-            message: '%(product)s Compactor {{ $labels.instance }} in %(alert_aggregation_variables)s has not run compaction in the last 24 hours.' % $._config,
+            message: '%(product)s Compactor %(alert_instance_variable)s in %(alert_aggregation_variables)s has not run compaction in the last 24 hours.' % $._config,
           },
         },
         {
@@ -42,9 +43,10 @@
           |||,
           labels: {
             severity: 'critical',
+            reason: 'since-startup',
           },
           annotations: {
-            message: '%(product)s Compactor {{ $labels.instance }} in %(alert_aggregation_variables)s has not run compaction in the last 24 hours.' % $._config,
+            message: '%(product)s Compactor %(alert_instance_variable)s in %(alert_aggregation_variables)s has not run compaction in the last 24 hours.' % $._config,
           },
         },
         {
@@ -55,9 +57,10 @@
           |||,
           labels: {
             severity: 'critical',
+            reason: 'consecutive-failures',
           },
           annotations: {
-            message: '%(product)s Compactor {{ $labels.instance }} in %(alert_aggregation_variables)s failed to run 2 consecutive compactions.' % $._config,
+            message: '%(product)s Compactor %(alert_instance_variable)s in %(alert_aggregation_variables)s failed to run 2 consecutive compactions.' % $._config,
           },
         },
         {
@@ -65,15 +68,15 @@
           alert: $.alertName('CompactorHasNotUploadedBlocks'),
           'for': '15m',
           expr: |||
-            (time() - thanos_objstore_bucket_last_successful_upload_time{job=~".+/(%(compactor)s)"} > 60 * 60 * 24)
+            (time() - thanos_objstore_bucket_last_successful_upload_time{component="compactor"} > 60 * 60 * 24)
             and
-            (thanos_objstore_bucket_last_successful_upload_time{job=~".+/(%(compactor)s)"} > 0)
-          ||| % $._config.job_names,
+            (thanos_objstore_bucket_last_successful_upload_time{component="compactor"} > 0)
+          |||,
           labels: {
             severity: 'critical',
           },
           annotations: {
-            message: '%(product)s Compactor {{ $labels.instance }} in %(alert_aggregation_variables)s has not uploaded any block in the last 24 hours.' % $._config,
+            message: '%(product)s Compactor %(alert_instance_variable)s in %(alert_aggregation_variables)s has not uploaded any block in the last 24 hours.' % $._config,
           },
         },
         {
@@ -81,13 +84,13 @@
           alert: $.alertName('CompactorHasNotUploadedBlocks'),
           'for': '24h',
           expr: |||
-            thanos_objstore_bucket_last_successful_upload_time{job=~".+/(%(compactor)s)"} == 0
-          ||| % $._config.job_names,
+            thanos_objstore_bucket_last_successful_upload_time{component="compactor"} == 0
+          |||,
           labels: {
             severity: 'critical',
           },
           annotations: {
-            message: '%(product)s Compactor {{ $labels.instance }} in %(alert_aggregation_variables)s has not uploaded any block in the last 24 hours.' % $._config,
+            message: '%(product)s Compactor %(alert_instance_variable)s in %(alert_aggregation_variables)s has not uploaded any block in the last 24 hours.' % $._config,
           },
         },
         {
@@ -95,13 +98,13 @@
           alert: $.alertName('CompactorSkippedBlocksWithOutOfOrderChunks'),
           'for': '1m',
           expr: |||
-            increase(cortex_compactor_blocks_marked_for_no_compaction_total{job=~".+/(%(compactor)s)", reason="block-index-out-of-order-chunk"}[5m]) > 0
-          ||| % $._config.job_names,
+            increase(cortex_compactor_blocks_marked_for_no_compaction_total{component="compactor", reason="block-index-out-of-order-chunk"}[5m]) > 0
+          |||,
           labels: {
             severity: 'warning',
           },
           annotations: {
-            message: '%(product)s Compactor {{ $labels.instance }} in %(alert_aggregation_variables)s has found and ignored blocks with out of order chunks.' % $._config,
+            message: '%(product)s Compactor %(alert_instance_variable)s in %(alert_aggregation_variables)s has found and ignored blocks with out of order chunks.' % $._config,
           },
         },
       ],

@@ -1,10 +1,12 @@
 local utils = import 'mixin-utils/utils.libsonnet';
+local filename = 'mimir-reads-resources.json';
 
 (import 'dashboard-utils.libsonnet') {
-  'mimir-reads-resources.json':
-    ($.dashboard('Reads resources') + { uid: '2fd2cda9eea8d8af9fbc0a5960425120' })
+  [filename]:
+    ($.dashboard('Reads resources') + { uid: std.md5(filename) })
     .addClusterSelectorTemplates(false)
-    .addRow(
+    .addRowIf(
+      $._config.gateway_enabled,
       $.row('Gateway')
       .addPanel(
         $.containerCPUUsagePanel('CPU', $._config.job_names.gateway),
@@ -58,10 +60,16 @@ local utils = import 'mixin-utils/utils.libsonnet';
         $.containerCPUUsagePanel('CPU', 'ingester'),
       )
       .addPanel(
-        $.containerMemoryWorkingSetPanel('Memory (workingset)', 'ingester'),
+        $.goHeapInUsePanel('Memory (go heap inuse)', $._config.job_names.ingester),
+      )
+    )
+    .addRow(
+      $.row('')
+      .addPanel(
+        $.containerMemoryRSSPanel('Memory (RSS)', 'ingester'),
       )
       .addPanel(
-        $.goHeapInUsePanel('Memory (go heap inuse)', $._config.job_names.ingester),
+        $.containerMemoryWorkingSetPanel('Memory (workingset)', 'ingester'),
       )
     )
     .addRow(
@@ -92,10 +100,16 @@ local utils = import 'mixin-utils/utils.libsonnet';
         $.containerCPUUsagePanel('CPU', 'store-gateway'),
       )
       .addPanel(
-        $.containerMemoryWorkingSetPanel('Memory (workingset)', 'store-gateway'),
+        $.goHeapInUsePanel('Memory (go heap inuse)', $._config.job_names.store_gateway),
+      )
+    )
+    .addRow(
+      $.row('')
+      .addPanel(
+        $.containerMemoryRSSPanel('Memory (RSS)', 'store-gateway'),
       )
       .addPanel(
-        $.goHeapInUsePanel('Memory (go heap inuse)', $._config.job_names.store_gateway),
+        $.containerMemoryWorkingSetPanel('Memory (workingset)', 'store-gateway'),
       )
     )
     .addRow(

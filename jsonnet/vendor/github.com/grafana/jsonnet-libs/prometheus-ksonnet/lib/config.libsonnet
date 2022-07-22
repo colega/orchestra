@@ -1,7 +1,7 @@
 {
   _config+:: {
     // Cluster and environment specific overrides.
-    cluster_dns_tld: 'local',
+    cluster_dns_tld: 'local.',
     cluster_dns_suffix: 'cluster.' + self.cluster_dns_tld,
     cluster_name: error 'must specify cluster name',
     namespace: error 'must specify namespace',
@@ -19,7 +19,7 @@
       {
         title: 'Prometheus',
         path: 'prometheus',
-        url: 'http://prometheus.%(namespace)s.svc.%(cluster_dns_suffix)s/prometheus/' % $._config,
+        url: 'http://prometheus.%(prometheus_namespace)s.svc.%(cluster_dns_suffix)s/prometheus/' % $._config,
       },
       if $._config.alertmanager_cluster_self.replicas > 0 then {
         title: 'Alertmanager' + if $._config.alertmanager_cluster_self.global then ' (global)' else ' (local)',

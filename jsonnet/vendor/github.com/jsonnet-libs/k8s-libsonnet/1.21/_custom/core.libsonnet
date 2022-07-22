@@ -48,6 +48,26 @@ local d = import 'doc-util/main.libsonnet';
             $.core.v1.envVar.new(k, env[k])
             for k in std.objectFields(env)
           ]),
+
+        withResourcesRequests(cpu, memory)::
+          self.resources.withRequests(
+            (if cpu != null
+             then { cpu: cpu }
+             else {}) +
+            (if memory != null
+             then { memory: memory }
+             else {})
+          ),
+
+        withResourcesLimits(cpu, memory)::
+          self.resources.withLimits(
+            (if cpu != null
+             then { cpu: cpu }
+             else {}) +
+            (if memory != null
+             then { memory: memory }
+             else {})
+          ),
       },
 
       containerPort+: {
@@ -127,6 +147,11 @@ local d = import 'doc-util/main.libsonnet';
           super.new(name)
           + super.spec.withSelector(selector)
           + super.spec.withPorts(ports),
+        '#newWithoutSelector'+: d.fn('newWithoutSelector works like `new`, but creates a Service without ports and selector', [
+          d.arg('name', d.T.string),
+        ]),
+        newWithoutSelector(name)::
+          super.new(name),
       },
 
       servicePort+:: {

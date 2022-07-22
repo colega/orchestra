@@ -1,7 +1,6 @@
 {
   local configMap = $.core.v1.configMap,
   local container = $.core.v1.container,
-  local podDisruptionBudget = $.policy.v1beta1.podDisruptionBudget,
   local pvc = $.core.v1.persistentVolumeClaim,
   local service = $.core.v1.service,
   local statefulSet = $.apps.v1.statefulSet,
@@ -44,10 +43,12 @@
       pvc.mixin.spec.resources.withRequests({ storage: '100Gi' })
     else {},
 
+  alertmanager_ports:: $.util.defaultPorts,
+
   alertmanager_container::
     if $._config.alertmanager_enabled then
       container.new('alertmanager', $._images.alertmanager) +
-      container.withPorts($.util.defaultPorts) +
+      container.withPorts($.alertmanager_ports) +
       container.withEnvMixin([container.envType.fromFieldPath('POD_IP', 'status.podIP')]) +
       container.withArgsMixin(
         $.util.mapToFlags($.alertmanager_args)
@@ -66,17 +67,9 @@
 
   alertmanager_statefulset:
     if $._config.alertmanager_enabled then
-      statefulSet.new('alertmanager', $._config.alertmanager.replicas, [$.alertmanager_container], $.alertmanager_pvc) +
-      statefulSet.mixin.spec.withServiceName('alertmanager') +
-      statefulSet.mixin.metadata.withNamespace($._config.namespace) +
-      statefulSet.mixin.metadata.withLabels({ name: 'alertmanager' }) +
-      statefulSet.mixin.spec.template.metadata.withLabels({ name: 'alertmanager' }) +
-      statefulSet.mixin.spec.selector.withMatchLabels({ name: 'alertmanager' }) +
-      statefulSet.mixin.spec.template.spec.securityContext.withRunAsUser(0) +
-      statefulSet.mixin.spec.updateStrategy.withType('RollingUpdate') +
+      $.newMimirStatefulSet('alertmanager', $._config.alertmanager.replicas, $.alertmanager_container, $.alertmanager_pvc, podManagementPolicy=null) +
       statefulSet.mixin.spec.template.spec.withTerminationGracePeriodSeconds(900) +
       $.util.configVolumeMount($._config.overrides_configmap, $._config.overrides_configmap_mountpoint) +
-      (if !std.isObject($._config.node_selector) then {} else statefulSet.mixin.spec.template.spec.withNodeSelectorMixin($._config.node_selector)) +
       statefulSet.mixin.spec.template.spec.withVolumesMixin(
         if hasFallbackConfig then
           [volume.fromConfigMap('alertmanager-fallback-config', 'alertmanager-fallback-config')]
@@ -90,13 +83,6 @@
       service.mixin.spec.withClusterIp('None')
     else {},
 
-  alertmanager_pdb:
-    if $._config.alertmanager_enabled then
-      podDisruptionBudget.new('alertmanager-pdb') +
-      podDisruptionBudget.mixin.metadata.withLabels({ name: 'alertmanager-pdb' }) +
-      podDisruptionBudget.mixin.spec.selector.withMatchLabels({
-        name: $.alertmanager_statefulset.spec.template.metadata.labels.name,
-      }) +
-      podDisruptionBudget.mixin.spec.withMaxUnavailable(1)
-    else {},
+  alertmanager_pdb: if !$._config.alertmanager_enabled then null else
+    $.newMimirPdb('alertmanager'),
 }

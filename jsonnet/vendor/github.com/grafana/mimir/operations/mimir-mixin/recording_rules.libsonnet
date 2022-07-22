@@ -12,45 +12,49 @@ local utils = import 'mixin-utils/utils.libsonnet';
       {
         name: 'mimir_api_1',
         rules:
-          utils.histogramRules('cortex_request_duration_seconds', [$._config.per_cluster_label, 'job']),
+          utils.histogramRules('cortex_request_duration_seconds', [$._config.per_cluster_label, 'job'], $._config.recording_rules_range_interval),
       },
       {
         name: 'mimir_api_2',
         rules:
-          utils.histogramRules('cortex_request_duration_seconds', [$._config.per_cluster_label, 'job', 'route']),
+          utils.histogramRules('cortex_request_duration_seconds', [$._config.per_cluster_label, 'job', 'route'], $._config.recording_rules_range_interval),
       },
       {
         name: 'mimir_api_3',
         rules:
-          utils.histogramRules('cortex_request_duration_seconds', $._config.job_labels + ['route']),
+          utils.histogramRules('cortex_request_duration_seconds', $._config.job_labels + ['route'], $._config.recording_rules_range_interval),
       },
       {
         name: 'mimir_querier_api',
         rules:
-          utils.histogramRules('cortex_querier_request_duration_seconds', [$._config.per_cluster_label, 'job']) +
-          utils.histogramRules('cortex_querier_request_duration_seconds', [$._config.per_cluster_label, 'job', 'route']) +
-          utils.histogramRules('cortex_querier_request_duration_seconds', $._config.job_labels + ['route']),
+          utils.histogramRules('cortex_querier_request_duration_seconds', [$._config.per_cluster_label, 'job'], $._config.recording_rules_range_interval) +
+          utils.histogramRules('cortex_querier_request_duration_seconds', [$._config.per_cluster_label, 'job', 'route'], $._config.recording_rules_range_interval) +
+          utils.histogramRules('cortex_querier_request_duration_seconds', $._config.job_labels + ['route'], $._config.recording_rules_range_interval),
       },
       {
         name: 'mimir_cache',
         rules:
-          utils.histogramRules('cortex_memcache_request_duration_seconds', [$._config.per_cluster_label, 'job', 'method']) +
-          utils.histogramRules('cortex_cache_request_duration_seconds', [$._config.per_cluster_label, 'job']) +
-          utils.histogramRules('cortex_cache_request_duration_seconds', [$._config.per_cluster_label, 'job', 'method']),
+          utils.histogramRules('cortex_memcache_request_duration_seconds', [$._config.per_cluster_label, 'job', 'method'], $._config.recording_rules_range_interval) +
+          utils.histogramRules('cortex_cache_request_duration_seconds', [$._config.per_cluster_label, 'job'], $._config.recording_rules_range_interval) +
+          utils.histogramRules('cortex_cache_request_duration_seconds', [$._config.per_cluster_label, 'job', 'method'], $._config.recording_rules_range_interval),
       },
       {
         name: 'mimir_storage',
         rules:
-          utils.histogramRules('cortex_kv_request_duration_seconds', [$._config.per_cluster_label, 'job']),
+          utils.histogramRules('cortex_kv_request_duration_seconds', [$._config.per_cluster_label, 'job'], $._config.recording_rules_range_interval),
       },
       {
         name: 'mimir_queries',
         rules:
-          utils.histogramRules('cortex_query_frontend_retries', [$._config.per_cluster_label, 'job']) +
-          utils.histogramRules('cortex_query_frontend_queue_duration_seconds', [$._config.per_cluster_label, 'job']) +
-          utils.histogramRules('cortex_ingester_queried_series', [$._config.per_cluster_label, 'job']) +
-          utils.histogramRules('cortex_ingester_queried_samples', [$._config.per_cluster_label, 'job']) +
-          utils.histogramRules('cortex_ingester_queried_exemplars', [$._config.per_cluster_label, 'job']),
+          utils.histogramRules('cortex_query_frontend_retries', [$._config.per_cluster_label, 'job'], $._config.recording_rules_range_interval) +
+          utils.histogramRules('cortex_query_frontend_queue_duration_seconds', [$._config.per_cluster_label, 'job'], $._config.recording_rules_range_interval),
+      },
+      {
+        name: 'mimir_ingester_queries',
+        rules:
+          utils.histogramRules('cortex_ingester_queried_series', [$._config.per_cluster_label, 'job'], $._config.recording_rules_range_interval) +
+          utils.histogramRules('cortex_ingester_queried_samples', [$._config.per_cluster_label, 'job'], $._config.recording_rules_range_interval) +
+          utils.histogramRules('cortex_ingester_queried_exemplars', [$._config.per_cluster_label, 'job'], $._config.recording_rules_range_interval),
       },
       {
         name: 'mimir_received_samples',
@@ -257,7 +261,7 @@ local utils = import 'mixin-utils/utils.libsonnet';
                 label_replace(
                   label_replace(
                     node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate,
-                    "deployment", "$1", "pod", "(.*)-(?:([0-9]+)|([a-z0-9]+)-([a-z0-9]+))"
+                    "deployment", "$1", "%(per_instance_label)s", "(.*)-(?:([0-9]+)|([a-z0-9]+)-([a-z0-9]+))"
                   ),
                   # The question mark in "(.*?)" is used to make it non-greedy, otherwise it
                   # always matches everything and the (optional) zone is not removed.
@@ -283,7 +287,7 @@ local utils = import 'mixin-utils/utils.libsonnet';
                   label_replace(
                     label_replace(
                       kube_pod_container_resource_requests_cpu_cores,
-                      "deployment", "$1", "pod", "(.*)-(?:([0-9]+)|([a-z0-9]+)-([a-z0-9]+))"
+                      "deployment", "$1", "%(per_instance_label)s", "(.*)-(?:([0-9]+)|([a-z0-9]+)-([a-z0-9]+))"
                     ),
                     # The question mark in "(.*?)" is used to make it non-greedy, otherwise it
                     # always matches everything and the (optional) zone is not removed.
@@ -299,7 +303,7 @@ local utils = import 'mixin-utils/utils.libsonnet';
                   label_replace(
                     label_replace(
                       kube_pod_container_resource_requests{resource="cpu"},
-                      "deployment", "$1", "pod", "(.*)-(?:([0-9]+)|([a-z0-9]+)-([a-z0-9]+))"
+                      "deployment", "$1", "%(per_instance_label)s", "(.*)-(?:([0-9]+)|([a-z0-9]+)-([a-z0-9]+))"
                     ),
                     # The question mark in "(.*?)" is used to make it non-greedy, otherwise it
                     # always matches everything and the (optional) zone is not removed.
@@ -335,8 +339,8 @@ local utils = import 'mixin-utils/utils.libsonnet';
               sum by (%(alert_aggregation_labels)s, deployment) (
                 label_replace(
                   label_replace(
-                    container_memory_usage_bytes,
-                    "deployment", "$1", "pod", "(.*)-(?:([0-9]+)|([a-z0-9]+)-([a-z0-9]+))"
+                    container_memory_usage_bytes{image!=""},
+                    "deployment", "$1", "%(per_instance_label)s", "(.*)-(?:([0-9]+)|([a-z0-9]+)-([a-z0-9]+))"
                   ),
                   # The question mark in "(.*?)" is used to make it non-greedy, otherwise it
                   # always matches everything and the (optional) zone is not removed.
@@ -362,7 +366,7 @@ local utils = import 'mixin-utils/utils.libsonnet';
                   label_replace(
                     label_replace(
                       kube_pod_container_resource_requests_memory_bytes,
-                      "deployment", "$1", "pod", "(.*)-(?:([0-9]+)|([a-z0-9]+)-([a-z0-9]+))"
+                      "deployment", "$1", "%(per_instance_label)s", "(.*)-(?:([0-9]+)|([a-z0-9]+)-([a-z0-9]+))"
                     ),
                     # The question mark in "(.*?)" is used to make it non-greedy, otherwise it
                     # always matches everything and the (optional) zone is not removed.
@@ -378,7 +382,7 @@ local utils = import 'mixin-utils/utils.libsonnet';
                   label_replace(
                     label_replace(
                       kube_pod_container_resource_requests{resource="memory"},
-                      "deployment", "$1", "pod", "(.*)-(?:([0-9]+)|([a-z0-9]+)-([a-z0-9]+))"
+                      "deployment", "$1", "%(per_instance_label)s", "(.*)-(?:([0-9]+)|([a-z0-9]+)-([a-z0-9]+))"
                     ),
                     # The question mark in "(.*?)" is used to make it non-greedy, otherwise it
                     # always matches everything and the (optional) zone is not removed.

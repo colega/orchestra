@@ -1,15 +1,41 @@
 local utils = import 'mixin-utils/utils.libsonnet';
 
 (import 'grafana-builder/grafana.libsonnet') {
+  local resourceRequestStyle = { alias: 'request', color: '#FFC000', fill: 0, dashes: true, dashLength: 5 },
+  local resourceLimitStyle = { alias: 'limit', color: '#E02F44', fill: 0, dashes: true, dashLength: 5 },
+
+  local resourceRequestColor = '#FFC000',
+  local resourceLimitColor = '#E02F44',
 
   _config:: error 'must provide _config',
+
+  row(title)::
+    super.row(title) + {
+      addPanelIf(condition, panel)::
+        if condition
+        then self.addPanel(panel)
+        else self,
+    },
 
   // Override the dashboard constructor to add:
   // - default tags,
   // - some links that propagate the selectred cluster.
   dashboard(title)::
     // Prefix the dashboard title with "<product> /" unless configured otherwise.
-    super.dashboard('%(prefix)s%(title)s' % { prefix: $._config.dashboard_prefix, title: title }) + {
+    super.dashboard(
+      title='%(prefix)s%(title)s' % { prefix: $._config.dashboard_prefix, title: title },
+      datasource=$._config.dashboard_datasource,
+      datasource_regex=$._config.datasource_regex
+    ) + {
+      __requires: [
+        {
+          id: 'grafana',
+          name: 'Grafana',
+          type: 'grafana',
+          version: '8.0.0',
+        },
+      ],
+
       addRowIf(condition, row)::
         if condition
         then self.addRow(row)
@@ -111,6 +137,14 @@ local utils = import 'mixin-utils/utils.libsonnet';
     then [utils.selector.noop('%s' % $._config.per_cluster_label), utils.selector.re('job', '$job')]
     else [utils.selector.re('%s' % $._config.per_cluster_label, '$cluster'), utils.selector.re('job', '($namespace)/(%s)' % job)],
 
+  panel(title)::
+    super.panel(title) + {
+      tooltip+: {
+        shared: false,
+        sort: 0,
+      },
+    },
+
   queryPanel(queries, legends, legendLink=null)::
     super.queryPanel(queries, legends, legendLink) + {
       targets: [
@@ -178,16 +212,15 @@ local utils = import 'mixin-utils/utils.libsonnet';
     $.queryPanel([
       'sum by(%s) (rate(container_cpu_usage_seconds_total{%s,container=~"%s"}[$__rate_interval]))' % [$._config.per_instance_label, $.namespaceMatcher(), containerName],
       'min(container_spec_cpu_quota{%s,container=~"%s"} / container_spec_cpu_period{%s,container=~"%s"})' % [$.namespaceMatcher(), containerName, $.namespaceMatcher(), containerName],
-    ], ['{{%s}}' % $._config.per_instance_label, 'limit']) +
+      'min(kube_pod_container_resource_requests{%s,container=~"%s",resource="cpu"})' % [$.namespaceMatcher(), containerName],
+    ], ['{{%s}}' % $._config.per_instance_label, 'limit', 'request']) +
     {
       seriesOverrides: [
-        {
-          alias: 'limit',
-          color: '#E02F44',
-          fill: 0,
-        },
+        resourceRequestStyle,
+        resourceLimitStyle,
       ],
       tooltip: { sort: 2 },  // Sort descending.
+      fill: 0,
     },
 
   containerMemoryWorkingSetPanel(title, containerName)::
@@ -197,17 +230,35 @@ local utils = import 'mixin-utils/utils.libsonnet';
       // summing the memory of the old instance/pod (whose metric will be stale for 5m) to the new instance/pod.
       'max by(%s) (container_memory_working_set_bytes{%s,container=~"%s"})' % [$._config.per_instance_label, $.namespaceMatcher(), containerName],
       'min(container_spec_memory_limit_bytes{%s,container=~"%s"} > 0)' % [$.namespaceMatcher(), containerName],
-    ], ['{{%s}}' % $._config.per_instance_label, 'limit']) +
+      'min(kube_pod_container_resource_requests{%s,container=~"%s",resource="memory"})' % [$.namespaceMatcher(), containerName],
+    ], ['{{%s}}' % $._config.per_instance_label, 'limit', 'request']) +
     {
       seriesOverrides: [
-        {
-          alias: 'limit',
-          color: '#E02F44',
-          fill: 0,
-        },
+        resourceRequestStyle,
+        resourceLimitStyle,
       ],
       yaxes: $.yaxes('bytes'),
       tooltip: { sort: 2 },  // Sort descending.
+      fill: 0,
+    },
+
+  containerMemoryRSSPanel(title, containerName)::
+    $.panel(title) +
+    $.queryPanel([
+      // We use "max" instead of "sum" otherwise during a rolling update of a statefulset we will end up
+      // summing the memory of the old instance/pod (whose metric will be stale for 5m) to the new instance/pod.
+      'max by(%s) (container_memory_rss{%s,container=~"%s"})' % [$._config.per_instance_label, $.namespaceMatcher(), containerName],
+      'min(container_spec_memory_limit_bytes{%s,container=~"%s"} > 0)' % [$.namespaceMatcher(), containerName],
+      'min(kube_pod_container_resource_requests{%s,container=~"%s",resource="memory"})' % [$.namespaceMatcher(), containerName],
+    ], ['{{%s}}' % $._config.per_instance_label, 'limit', 'request']) +
+    {
+      seriesOverrides: [
+        resourceRequestStyle,
+        resourceLimitStyle,
+      ],
+      yaxes: $.yaxes('bytes'),
+      tooltip: { sort: 2 },  // Sort descending.
+      fill: 0,
     },
 
   containerNetworkPanel(title, metric, instanceName)::
@@ -289,7 +340,10 @@ local utils = import 'mixin-utils/utils.libsonnet';
         label: $.containerLabelMatcher(containerName),
       }, '{{persistentvolumeclaim}}'
     ) +
-    { yaxes: $.yaxes('percentunit') },
+    {
+      yaxes: $.yaxes('percentunit'),
+      fill: 0,
+    },
 
   containerLabelMatcher(containerName)::
     if containerName == 'ingester' then 'label_name=~"ingester.*"'
@@ -297,23 +351,27 @@ local utils = import 'mixin-utils/utils.libsonnet';
     else 'label_name="%s"' % containerName,
 
   jobNetworkingRow(title, name)::
+    local vars = $._config {
+      job_matcher: $.jobMatcher($._config.job_names[name]),
+    };
+
     super.row(title)
     .addPanel($.containerNetworkReceiveBytesPanel($._config.instance_names[name]))
     .addPanel($.containerNetworkTransmitBytesPanel($._config.instance_names[name]))
     .addPanel(
       $.panel('Inflight requests (per pod)') +
       $.queryPanel([
-        'avg(cortex_inflight_requests{%s})' % $.jobMatcher($._config.job_names[name]),
-        'max(cortex_inflight_requests{%s})' % $.jobMatcher($._config.job_names[name]),
+        'avg(cortex_inflight_requests{%(job_matcher)s})' % vars,
+        'max(cortex_inflight_requests{%(job_matcher)s})' % vars,
       ], ['avg', 'highest']) +
       { fill: 0 }
     )
     .addPanel(
       $.panel('TCP connections (per pod)') +
       $.queryPanel([
-        'avg(sum by(pod) (cortex_tcp_connections{%s}))' % $.jobMatcher($._config.job_names[name]),
-        'max(sum by(pod) (cortex_tcp_connections{%s}))' % $.jobMatcher($._config.job_names[name]),
-        'min(cortex_tcp_connections_limit{%s})' % $.jobMatcher($._config.job_names[name]),
+        'avg(sum by(%(per_instance_label)s) (cortex_tcp_connections{%(job_matcher)s}))' % vars,
+        'max(sum by(%(per_instance_label)s) (cortex_tcp_connections{%(job_matcher)s}))' % vars,
+        'min(cortex_tcp_connections_limit{%(job_matcher)s})' % vars,
       ], ['avg', 'highest', 'limit']) +
       { fill: 0 }
     ),
@@ -338,6 +396,7 @@ local utils = import 'mixin-utils/utils.libsonnet';
     {
       yaxes: $.yaxes('bytes'),
       tooltip: { sort: 2 },  // Sort descending.
+      fill: 0,
     },
 
   newStatPanel(queries, legends='', unit='percentunit', decimals=1, thresholds=[], instant=false, novalue='')::

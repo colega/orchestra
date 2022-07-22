@@ -10,10 +10,6 @@ local json_write_proxy = import 'json_write_proxy.libsonnet';
 mimir + scaling + credentials + ring + ingress + json_write_proxy {
   namespace: k.core.v1.namespace.new($._config.namespace),
 
-  _images+:: {
-    mimir: 'grafana/mimir:r183-5299284',
-  },
-
   _config+:: {
     namespace: 'mimir',
     blocks_storage_backend: 'gcs',

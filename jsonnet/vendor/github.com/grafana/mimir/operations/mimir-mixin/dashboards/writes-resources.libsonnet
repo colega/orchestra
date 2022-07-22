@@ -1,10 +1,12 @@
 local utils = import 'mixin-utils/utils.libsonnet';
+local filename = 'mimir-writes-resources.json';
 
 (import 'dashboard-utils.libsonnet') {
-  'mimir-writes-resources.json':
-    ($.dashboard('Writes resources') + { uid: 'c0464f0d8bd026f776c9006b0591bb0b' })
+  [filename]:
+    ($.dashboard('Writes resources') + { uid: std.md5(filename) })
     .addClusterSelectorTemplates(false)
-    .addRow(
+    .addRowIf(
+      $._config.gateway_enabled,
       $.row('Gateway')
       .addPanel(
         $.containerCPUUsagePanel('CPU', $._config.job_names.gateway),
@@ -38,6 +40,7 @@ local utils = import 'mixin-utils/utils.libsonnet';
         ) +
         {
           tooltip: { sort: 2 },  // Sort descending.
+          fill: 0,
         },
       )
       .addPanel(
@@ -46,6 +49,9 @@ local utils = import 'mixin-utils/utils.libsonnet';
     )
     .addRow(
       $.row('')
+      .addPanel(
+        $.containerMemoryRSSPanel('Memory (RSS)', 'ingester'),
+      )
       .addPanel(
         $.containerMemoryWorkingSetPanel('Memory (workingset)', 'ingester'),
       )
