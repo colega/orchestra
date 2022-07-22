@@ -29,6 +29,8 @@ local k = import 'github.com/grafana/jsonnet-libs/ksonnet-util/kausal.libsonnet'
   store_gateway_container+:: k.util.resourcesRequests('100m', '128Mi'),
   store_gateway_statefulset+: statefulSet.mixin.spec.withReplicas(3),
 
+  query_scheduler_deployment+: deployment.mixin.spec.withReplicas(1),
+
   local smallMemcached = {
     cpu_requests:: '100m',
     memory_limit_mb:: 64,
