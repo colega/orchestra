@@ -27,6 +27,7 @@ local utils = import 'mixin-utils/utils.libsonnet';
       datasource=$._config.dashboard_datasource,
       datasource_regex=$._config.datasource_regex
     ) + {
+      graphTooltip: $._config.graph_tooltip,
       __requires: [
         {
           id: 'grafana',
@@ -78,16 +79,16 @@ local utils = import 'mixin-utils/utils.libsonnet';
 
         if multi then
           if $._config.singleBinary
-          then d.addMultiTemplate('job', 'cortex_build_info', 'job')
+          then d.addMultiTemplate('job', $._config.dashboard_variables.job_query, 'job')
           else d
-               .addMultiTemplate('cluster', 'cortex_build_info', '%s' % $._config.per_cluster_label)
-               .addMultiTemplate('namespace', 'cortex_build_info{%s=~"$cluster"}' % $._config.per_cluster_label, 'namespace')
+               .addMultiTemplate('cluster', $._config.dashboard_variables.cluster_query, '%s' % $._config.per_cluster_label)
+               .addMultiTemplate('namespace', $._config.dashboard_variables.namespace_query, 'namespace')
         else
           if $._config.singleBinary
-          then d.addTemplate('job', 'cortex_build_info', 'job')
+          then d.addTemplate('job', $._config.dashboard_variables.job_query, 'job')
           else d
-               .addTemplate('cluster', 'cortex_build_info', '%s' % $._config.per_cluster_label)
-               .addTemplate('namespace', 'cortex_build_info{%s=~"$cluster"}' % $._config.per_cluster_label, 'namespace'),
+               .addTemplate('cluster', $._config.dashboard_variables.cluster_query, '%s' % $._config.per_cluster_label, allValue='.*', includeAll=true)
+               .addTemplate('namespace', $._config.dashboard_variables.namespace_query, 'namespace'),
 
       addActiveUserSelectorTemplates()::
         self.addTemplate('user', 'cortex_ingester_active_series{%s=~"$cluster", namespace=~"$namespace"}' % $._config.per_cluster_label, 'user'),
@@ -145,41 +146,39 @@ local utils = import 'mixin-utils/utils.libsonnet';
       },
     },
 
-  queryPanel(queries, legends, legendLink=null)::
-    super.queryPanel(queries, legends, legendLink) + {
-      targets: [
-        target {
-          interval: '15s',
-        }
-        for target in super.targets
-      ],
-    },
+  qpsPanel(selector, statusLabelName='status_code')::
+    super.qpsPanel(selector, statusLabelName) +
+    { yaxes: $.yaxes('reqps') },
 
-  // hiddenLegendQueryPanel is a standard query panel designed to handle a large number of series.  it hides the legend, doesn't fill the series and
-  //  sorts the tooltip descending
-  hiddenLegendQueryPanel(queries, legends, legendLink=null)::
+  // hiddenLegendQueryPanel adds on to 'timeseriesPanel', not the deprecated 'panel'.
+  // It is a standard query panel designed to handle a large number of series.  it hides the legend, doesn't fill the series and
+  // shows all values on tooltip, descending. Also turns on exemplars, unless 4th parameter is false.
+  hiddenLegendQueryPanel(queries, legends, legendLink=null, exemplars=true)::
     $.queryPanel(queries, legends, legendLink) +
     {
-      legend: { show: false },
-      fill: 0,
-      tooltip: { sort: 2 },
-    },
-
-  qpsPanel(selector)::
-    super.qpsPanel(selector) + {
+      options: {
+        legend+: {
+          showLegend: false,
+          // Work round Grafana turning showLegend back on when we have
+          // schemaVersion<37. https://github.com/grafana/grafana/issues/54472
+          displayMode: 'hidden',
+        },
+        tooltip+: {
+          mode: 'multi',
+          sort: 'desc',
+        },
+      },
+      fieldConfig+: {
+        defaults+: {
+          custom+: {
+            fillOpacity: 0,
+          },
+        },
+      },
+    } + {
       targets: [
         target {
-          interval: '15s',
-        }
-        for target in super.targets
-      ],
-    },
-
-  latencyPanel(metricName, selector, multiplier='1e3')::
-    super.latencyPanel(metricName, selector, multiplier) + {
-      targets: [
-        target {
-          interval: '15s',
+          exemplar: exemplars,
         }
         for target in super.targets
       ],
@@ -207,13 +206,40 @@ local utils = import 'mixin-utils/utils.libsonnet';
       },
     },
 
-  containerCPUUsagePanel(title, containerName)::
+  resourcesPanelLegend(first_legend)::
+    if $._config.deployment_type == 'kubernetes'
+    then [first_legend, 'limit', 'request']
+    // limit and request does not makes sense when running on baremetal
+    else [first_legend],
+
+  resourcesPanelQueries(metric, instanceName)::
+    if $._config.deployment_type == 'kubernetes'
+    then [
+      $._config.resources_panel_queries[$._config.deployment_type]['%s_usage' % metric] % {
+        instance: $._config.per_instance_label,
+        namespace: $.namespaceMatcher(),
+        instanceName: instanceName,
+      },
+      $._config.resources_panel_queries[$._config.deployment_type]['%s_limit' % metric] % {
+        namespace: $.namespaceMatcher(),
+        instanceName: instanceName,
+      },
+      $._config.resources_panel_queries[$._config.deployment_type]['%s_request' % metric] % {
+        namespace: $.namespaceMatcher(),
+        instanceName: instanceName,
+      },
+    ]
+    else [
+      $._config.resources_panel_queries[$._config.deployment_type]['%s_usage' % metric] % {
+        instance: $._config.per_instance_label,
+        namespace: $.namespaceMatcher(),
+        instanceName: instanceName,
+      },
+    ],
+
+  containerCPUUsagePanel(title, instanceName)::
     $.panel(title) +
-    $.queryPanel([
-      'sum by(%s) (rate(container_cpu_usage_seconds_total{%s,container=~"%s"}[$__rate_interval]))' % [$._config.per_instance_label, $.namespaceMatcher(), containerName],
-      'min(container_spec_cpu_quota{%s,container=~"%s"} / container_spec_cpu_period{%s,container=~"%s"})' % [$.namespaceMatcher(), containerName, $.namespaceMatcher(), containerName],
-      'min(kube_pod_container_resource_requests{%s,container=~"%s",resource="cpu"})' % [$.namespaceMatcher(), containerName],
-    ], ['{{%s}}' % $._config.per_instance_label, 'limit', 'request']) +
+    $.queryPanel($.resourcesPanelQueries('cpu', instanceName), $.resourcesPanelLegend('{{%s}}' % $._config.per_instance_label)) +
     {
       seriesOverrides: [
         resourceRequestStyle,
@@ -223,15 +249,9 @@ local utils = import 'mixin-utils/utils.libsonnet';
       fill: 0,
     },
 
-  containerMemoryWorkingSetPanel(title, containerName)::
+  containerMemoryWorkingSetPanel(title, instanceName)::
     $.panel(title) +
-    $.queryPanel([
-      // We use "max" instead of "sum" otherwise during a rolling update of a statefulset we will end up
-      // summing the memory of the old instance/pod (whose metric will be stale for 5m) to the new instance/pod.
-      'max by(%s) (container_memory_working_set_bytes{%s,container=~"%s"})' % [$._config.per_instance_label, $.namespaceMatcher(), containerName],
-      'min(container_spec_memory_limit_bytes{%s,container=~"%s"} > 0)' % [$.namespaceMatcher(), containerName],
-      'min(kube_pod_container_resource_requests{%s,container=~"%s",resource="memory"})' % [$.namespaceMatcher(), containerName],
-    ], ['{{%s}}' % $._config.per_instance_label, 'limit', 'request']) +
+    $.queryPanel($.resourcesPanelQueries('memory_working', instanceName), $.resourcesPanelLegend('{{%s}}' % $._config.per_instance_label)) +
     {
       seriesOverrides: [
         resourceRequestStyle,
@@ -242,15 +262,9 @@ local utils = import 'mixin-utils/utils.libsonnet';
       fill: 0,
     },
 
-  containerMemoryRSSPanel(title, containerName)::
+  containerMemoryRSSPanel(title, instanceName)::
     $.panel(title) +
-    $.queryPanel([
-      // We use "max" instead of "sum" otherwise during a rolling update of a statefulset we will end up
-      // summing the memory of the old instance/pod (whose metric will be stale for 5m) to the new instance/pod.
-      'max by(%s) (container_memory_rss{%s,container=~"%s"})' % [$._config.per_instance_label, $.namespaceMatcher(), containerName],
-      'min(container_spec_memory_limit_bytes{%s,container=~"%s"} > 0)' % [$.namespaceMatcher(), containerName],
-      'min(kube_pod_container_resource_requests{%s,container=~"%s",resource="memory"})' % [$.namespaceMatcher(), containerName],
-    ], ['{{%s}}' % $._config.per_instance_label, 'limit', 'request']) +
+    $.queryPanel($.resourcesPanelQueries('memory_rss', instanceName), $.resourcesPanelLegend('{{%s}}' % $._config.per_instance_label)) +
     {
       seriesOverrides: [
         resourceRequestStyle,
@@ -264,7 +278,7 @@ local utils = import 'mixin-utils/utils.libsonnet';
   containerNetworkPanel(title, metric, instanceName)::
     $.panel(title) +
     $.queryPanel(
-      'sum by(%(instance)s) (rate(%(metric)s{%(namespace)s,%(instance)s=~"%(instanceName)s"}[$__rate_interval]))' % {
+      $._config.resources_panel_queries[$._config.deployment_type].network % {
         namespace: $.namespaceMatcher(),
         metric: metric,
         instance: $._config.per_instance_label,
@@ -275,69 +289,50 @@ local utils = import 'mixin-utils/utils.libsonnet';
     { yaxes: $.yaxes('Bps') },
 
   containerNetworkReceiveBytesPanel(instanceName)::
-    $.containerNetworkPanel('Receive bandwidth', 'container_network_receive_bytes_total', instanceName),
+    $.containerNetworkPanel('Receive bandwidth', $._config.resources_panel_series[$._config.deployment_type].network_receive_bytes_metrics, instanceName),
 
   containerNetworkTransmitBytesPanel(instanceName)::
-    $.containerNetworkPanel('Transmit bandwidth', 'container_network_transmit_bytes_total', instanceName),
+    $.containerNetworkPanel('Transmit bandwidth', $._config.resources_panel_series[$._config.deployment_type].network_transmit_bytes_metrics, instanceName),
 
-  containerDiskWritesPanel(title, containerName)::
+  containerDiskWritesPanel(title, instanceName)::
     $.panel(title) +
     $.queryPanel(
-      |||
-        sum by(%s, %s, device) (
-          rate(
-            node_disk_written_bytes_total[$__rate_interval]
-          )
-        )
-        +
-        %s
-      ||| % [
-        $._config.per_node_label,
-        $._config.per_instance_label,
-        $.filterNodeDiskContainer(containerName),
-      ],
-      '{{%s}} - {{device}}' % $._config.per_instance_label
-    ) +
-    $.stack +
-    { yaxes: $.yaxes('Bps') },
-
-  containerDiskReadsPanel(title, containerName)::
-    $.panel(title) +
-    $.queryPanel(
-      |||
-        sum by(%s, %s, device) (
-          rate(
-            node_disk_read_bytes_total[$__rate_interval]
-          )
-        ) + %s
-      ||| % [
-        $._config.per_node_label,
-        $._config.per_instance_label,
-        $.filterNodeDiskContainer(containerName),
-      ],
-      '{{%s}} - {{device}}' % $._config.per_instance_label
-    ) +
-    $.stack +
-    { yaxes: $.yaxes('Bps') },
-
-  containerDiskSpaceUtilization(title, containerName)::
-    $.panel(title) +
-    $.queryPanel(
-      |||
-        max by(persistentvolumeclaim) (
-          kubelet_volume_stats_used_bytes{%(namespace)s} /
-          kubelet_volume_stats_capacity_bytes{%(namespace)s}
-        )
-        and
-        count by(persistentvolumeclaim) (
-          kube_persistentvolumeclaim_labels{
-            %(namespace)s,
-            %(label)s
-          }
-        )
-      ||| % {
+      $._config.resources_panel_queries[$._config.deployment_type].disk_writes % {
         namespace: $.namespaceMatcher(),
-        label: $.containerLabelMatcher(containerName),
+        instanceLabel: $._config.per_node_label,
+        instance: $._config.per_instance_label,
+        filterNodeDiskContainer: $.filterNodeDiskContainer(instanceName),
+        instanceName: instanceName,
+      },
+      '{{%s}} - {{device}}' % $._config.per_instance_label
+    ) +
+    $.stack +
+    { yaxes: $.yaxes('Bps') },
+
+  containerDiskReadsPanel(title, instanceName)::
+    $.panel(title) +
+    $.queryPanel(
+      $._config.resources_panel_queries[$._config.deployment_type].disk_reads % {
+        namespace: $.namespaceMatcher(),
+        instanceLabel: $._config.per_node_label,
+        instance: $._config.per_instance_label,
+        filterNodeDiskContainer: $.filterNodeDiskContainer(instanceName),
+        instanceName: instanceName,
+      },
+      '{{%s}} - {{device}}' % $._config.per_instance_label
+    ) +
+    $.stack +
+    { yaxes: $.yaxes('Bps') },
+
+  containerDiskSpaceUtilization(title, instanceName)::
+    $.panel(title) +
+    $.queryPanel(
+      $._config.resources_panel_queries[$._config.deployment_type].disk_utilization % {
+        namespace: $.namespaceMatcher(),
+        label: $.containerLabelMatcher(instanceName),
+        instance: $._config.per_instance_label,
+        instanceName: instanceName,
+        instanceDataDir: $._config.instance_data_mountpoint,
       }, '{{persistentvolumeclaim}}'
     ) +
     {
@@ -345,10 +340,10 @@ local utils = import 'mixin-utils/utils.libsonnet';
       fill: 0,
     },
 
-  containerLabelMatcher(containerName)::
-    if containerName == 'ingester' then 'label_name=~"ingester.*"'
-    else if containerName == 'store-gateway' then 'label_name=~"store-gateway.*"'
-    else 'label_name="%s"' % containerName,
+  containerLabelMatcher(instanceName)::
+    if instanceName == 'ingester' then 'label_name=~"ingester.*"'
+    else if instanceName == 'store-gateway' then 'label_name=~"store-gateway.*"'
+    else 'label_name="%s"' % instanceName,
 
   jobNetworkingRow(title, name)::
     local vars = $._config {
@@ -487,7 +482,7 @@ local utils = import 'mixin-utils/utils.libsonnet';
       $.panel('Operations / sec') +
       $.queryPanel('sum by(operation) (rate(thanos_objstore_bucket_operations_total{%s,component="%s"}[$__rate_interval]))' % [$.namespaceMatcher(), component], '{{operation}}') +
       $.stack +
-      { yaxes: $.yaxes('rps') },
+      { yaxes: $.yaxes('reqps') },
     )
     .addPanel(
       $.panel('Error rate') +
@@ -495,18 +490,23 @@ local utils = import 'mixin-utils/utils.libsonnet';
       { yaxes: $.yaxes('percentunit') },
     )
     .addPanel(
+      $.panel('Inflight requests') +
+      $.queryPanel('sum(cortex_bucket_stores_gate_queries_in_flight{%s, component="%s"})' % [$.namespaceMatcher(), component], 'Total')
+    ),
+    $.row('')
+    .addPanel(
       $.panel('Latency of op: Attributes') +
       $.latencyPanel('thanos_objstore_bucket_operation_duration_seconds', '{%s,component="%s",operation="attributes"}' % [$.namespaceMatcher(), component]),
     )
     .addPanel(
       $.panel('Latency of op: Exists') +
       $.latencyPanel('thanos_objstore_bucket_operation_duration_seconds', '{%s,component="%s",operation="exists"}' % [$.namespaceMatcher(), component]),
-    ),
-    $.row('')
+    )
     .addPanel(
       $.panel('Latency of op: Get') +
       $.latencyPanel('thanos_objstore_bucket_operation_duration_seconds', '{%s,component="%s",operation="get"}' % [$.namespaceMatcher(), component]),
-    )
+    ),
+    $.row('')
     .addPanel(
       $.panel('Latency of op: GetRange') +
       $.latencyPanel('thanos_objstore_bucket_operation_duration_seconds', '{%s,component="%s",operation="get_range"}' % [$.namespaceMatcher(), component]),
@@ -590,7 +590,7 @@ local utils = import 'mixin-utils/utils.libsonnet';
       { yaxes: $.yaxes('percentunit') }
     ),
 
-  filterNodeDiskContainer(containerName)::
+  filterNodeDiskContainer(instanceName)::
     |||
       ignoring(%s) group_right() (
         label_replace(
@@ -617,7 +617,7 @@ local utils = import 'mixin-utils/utils.libsonnet';
       $._config.per_node_label,
       $._config.per_instance_label,
       $.namespaceMatcher(),
-      containerName,
+      instanceName,
     ],
 
   filterKedaMetricByHPA(query, hpa_name)::

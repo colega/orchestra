@@ -19,12 +19,15 @@
     // Controls whether multiple pods for the same service can be scheduled on the same node.
     // Distributing the pods over different nodes improves performance and also realiability,
     // especially important in case of ingester where losing multiple ingesters can cause data loss.
-    distributor_allow_multiple_replicas_on_same_node: false,
     ingester_allow_multiple_replicas_on_same_node: false,
-    ruler_allow_multiple_replicas_on_same_node: false,
-    querier_allow_multiple_replicas_on_same_node: false,
-    query_frontend_allow_multiple_replicas_on_same_node: false,
     store_gateway_allow_multiple_replicas_on_same_node: false,
+
+    // Controls the max skew for pod topology spread constraints.
+    // See: https://kubernetes.io/docs/concepts/workloads/pods/pod-topology-spread-constraints/
+    distributor_topology_spread_max_skew: 1,
+    query_frontend_topology_spread_max_skew: 1,
+    querier_topology_spread_max_skew: 1,
+    ruler_topology_spread_max_skew: 1,
 
     test_exporter_enabled: false,
     test_exporter_start_time: error 'must specify test exporter start time',
@@ -126,14 +129,12 @@
 
     // Querier component config (shared between the ruler and querier).
     queryConfig: {
-      'runtime-config.file': '%s/overrides.yaml' % $._config.overrides_configmap_mountpoint,
-
       // Don't allow individual queries of longer than 32days.  Due to day query
       // splitting in the frontend, the reality is this only limits rate(foo[32d])
       // type queries. 32 days to allow for comparision over the last month (31d) and
       // then some.
       'store.max-query-length': '768h',
-    },
+    } + $.mimirRuntimeConfigFile,
 
     // PromQL query engine config (shared between all services running PromQL engine, like the ruler and querier).
     queryEngineConfig: {},
@@ -227,7 +228,6 @@
     },
     ingesterLimitsConfig: {
       'ingester.max-global-series-per-user': $._config.limits.max_global_series_per_user,
-      'ingester.max-global-series-per-metric': $._config.limits.max_global_series_per_metric,
       'ingester.max-global-metadata-per-user': $._config.limits.max_global_metadata_per_user,
       'ingester.max-global-metadata-per-metric': $._config.limits.max_global_metadata_per_metric,
     },
@@ -244,11 +244,18 @@
     overrides_configmap: 'overrides',
     overrides_configmap_mountpoint: '/etc/mimir',
 
+    // Configmaps mounted to all components. Maps config map name to mount point.
+    configmaps: {
+      [$._config.overrides_configmap]: $._config.overrides_configmap_mountpoint,
+    },
+
+    // Paths to runtime config files. Paths are passed to -runtime-config.files in specified order.
+    runtime_config_files: ['%s/overrides.yaml' % $._config.overrides_configmap_mountpoint],
+
     overrides: {
       extra_small_user:: {
         // Our limit should be 100k, but we need some room of about ~50% to take rollouts into account
         max_global_series_per_user: 150000,
-        max_global_series_per_metric: 20000,
         max_global_metadata_per_user: std.ceil(self.max_global_series_per_user * 0.2),
         max_global_metadata_per_metric: 10,
 
@@ -265,7 +272,6 @@
 
       medium_small_user:: {
         max_global_series_per_user: 300000,
-        max_global_series_per_metric: 30000,
         max_global_metadata_per_user: std.ceil(self.max_global_series_per_user * 0.2),
         max_global_metadata_per_metric: 10,
 
@@ -279,7 +285,6 @@
 
       small_user:: {
         max_global_series_per_user: 1000000,
-        max_global_series_per_metric: 100000,
         max_global_metadata_per_user: std.ceil(self.max_global_series_per_user * 0.2),
         max_global_metadata_per_metric: 10,
 
@@ -293,7 +298,6 @@
 
       medium_user:: {
         max_global_series_per_user: 3000000,  // 3M
-        max_global_series_per_metric: 300000,  // 300K
         max_global_metadata_per_user: std.ceil(self.max_global_series_per_user * 0.2),
         max_global_metadata_per_metric: 10,
 
@@ -307,7 +311,6 @@
 
       big_user:: {
         max_global_series_per_user: 6000000,  // 6M
-        max_global_series_per_metric: 600000,  // 600K
         max_global_metadata_per_user: std.ceil(self.max_global_series_per_user * 0.2),
         max_global_metadata_per_metric: 10,
 
@@ -321,7 +324,6 @@
 
       super_user:: {
         max_global_series_per_user: 12000000,  // 12M
-        max_global_series_per_metric: 1200000,  // 1.2M
         max_global_metadata_per_user: std.ceil(self.max_global_series_per_user * 0.2),
         max_global_metadata_per_metric: 10,
 
@@ -340,7 +342,6 @@
       // This user class has limits increased by +50% compared to the previous one.
       mega_user+:: {
         max_global_series_per_user: 16000000,  // 16M
-        max_global_series_per_metric: 1600000,  // 1.6M
         max_global_metadata_per_user: std.ceil(self.max_global_series_per_user * 0.2),
         max_global_metadata_per_metric: 10,
 

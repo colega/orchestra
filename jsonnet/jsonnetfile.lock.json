@@ -78,8 +78,8 @@
           "subdir": "grafana-builder"
         }
       },
-      "version": "f8d8de549ca3101b713fdf126b25716a271aeb7f",
-      "sum": "TieGrr7GyKjURk1+wXHFpdoCiwNaIVfZvyc5mbI9OM0="
+      "version": "044d4f24b634a2736f0933593e9668dab7a60531",
+      "sum": "tDR6yT2GVfw0wTU12iZH+m01HrbIr6g/xN+/8nzNkU0="
     },
     {
       "source": {
@@ -218,8 +218,8 @@
           "subdir": "operations/mimir"
         }
       },
-      "version": "6cd45bedb27fa134aa2908ddc7b9045ea1e9e223",
-      "sum": "ewfH5YMt83EQFB3wY+xDI4q3pQrH18DtSDcazmW44+E="
+      "version": "08718eee836e1f1ecbf2bc7f7de3732fceb9a04c",
+      "sum": "S91wbNBBd3ZTbfgiZYualF9VFrSbmm6XSAuXArZvAvI="
     },
     {
       "source": {
@@ -228,8 +228,8 @@
           "subdir": "operations/mimir-mixin"
         }
       },
-      "version": "6cd45bedb27fa134aa2908ddc7b9045ea1e9e223",
-      "sum": "TU3zqvCRzbLhqygjcZaIN8udom5SSNruZL3V6x964eg="
+      "version": "08718eee836e1f1ecbf2bc7f7de3732fceb9a04c",
+      "sum": "eDTgn+QUb1Hs6HT8dJyKW1StExjdlwcWVZ6NYg6HhoE="
     },
     {
       "source": {
