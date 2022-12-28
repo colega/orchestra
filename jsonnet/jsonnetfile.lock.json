@@ -38,7 +38,7 @@
           "subdir": "alertmanager"
         }
       },
-      "version": "f8d8de549ca3101b713fdf126b25716a271aeb7f",
+      "version": "d68f9a6e0b1af7c4c4056dc2b43fb8f3bac01f43",
       "sum": "qCez+icm27SCa0Q8aZZ/axDm/Tr+vTzpVXUBtIiWkgI="
     },
     {
@@ -48,7 +48,7 @@
           "subdir": "consul"
         }
       },
-      "version": "f8d8de549ca3101b713fdf126b25716a271aeb7f",
+      "version": "d68f9a6e0b1af7c4c4056dc2b43fb8f3bac01f43",
       "sum": "Po3c1Ic96ngrJCtOazic/7OsLkoILOKZWXWyZWl+od8="
     },
     {
@@ -58,7 +58,7 @@
           "subdir": "etcd-operator"
         }
       },
-      "version": "f8d8de549ca3101b713fdf126b25716a271aeb7f",
+      "version": "d68f9a6e0b1af7c4c4056dc2b43fb8f3bac01f43",
       "sum": "duHm6wmUju5KHQurOe6dnXoKgl5gTUsfGplgbmAOsHw="
     },
     {
@@ -68,7 +68,7 @@
           "subdir": "grafana"
         }
       },
-      "version": "f8d8de549ca3101b713fdf126b25716a271aeb7f",
+      "version": "d68f9a6e0b1af7c4c4056dc2b43fb8f3bac01f43",
       "sum": "Y5nheroSOIwmE+djEVPq4OvvTxKenzdHhpEwaR3Ebjs="
     },
     {
@@ -78,7 +78,7 @@
           "subdir": "grafana-builder"
         }
       },
-      "version": "044d4f24b634a2736f0933593e9668dab7a60531",
+      "version": "d68f9a6e0b1af7c4c4056dc2b43fb8f3bac01f43",
       "sum": "tDR6yT2GVfw0wTU12iZH+m01HrbIr6g/xN+/8nzNkU0="
     },
     {
@@ -88,7 +88,7 @@
           "subdir": "jaeger-agent-mixin"
         }
       },
-      "version": "f8d8de549ca3101b713fdf126b25716a271aeb7f",
+      "version": "d68f9a6e0b1af7c4c4056dc2b43fb8f3bac01f43",
       "sum": "nsukyr2SS8h97I2mxvBazXZp2fxu1i6eg+rKq3/NRwY="
     },
     {
@@ -98,8 +98,8 @@
           "subdir": "ksonnet-util"
         }
       },
-      "version": "f8d8de549ca3101b713fdf126b25716a271aeb7f",
-      "sum": "QiIOYQ0mdyVXStdPxu99M5CYGtYAXczWAC62EAQmWBM="
+      "version": "d68f9a6e0b1af7c4c4056dc2b43fb8f3bac01f43",
+      "sum": "/pkNOLhRqvQoPA0yYdUuJvpPHqhkCLauAUMD2ZHMIkE="
     },
     {
       "source": {
@@ -108,7 +108,7 @@
           "subdir": "kube-state-metrics"
         }
       },
-      "version": "f8d8de549ca3101b713fdf126b25716a271aeb7f",
+      "version": "d68f9a6e0b1af7c4c4056dc2b43fb8f3bac01f43",
       "sum": "Zot8z80+8wDhelpW4h+Kui8SAW/V2Ve0xuE0EcMroWA="
     },
     {
@@ -118,8 +118,8 @@
           "subdir": "memcached"
         }
       },
-      "version": "f8d8de549ca3101b713fdf126b25716a271aeb7f",
-      "sum": "8hXTN4QOMkpad75LESkdfRD4/Sl81fMqZcD0ZPx2SNc="
+      "version": "d68f9a6e0b1af7c4c4056dc2b43fb8f3bac01f43",
+      "sum": "SWywAq4U0MRPMbASU0Ez8O9ArRNeoZzb75sEuReueow="
     },
     {
       "source": {
@@ -128,8 +128,8 @@
           "subdir": "mixin-utils"
         }
       },
-      "version": "f8d8de549ca3101b713fdf126b25716a271aeb7f",
-      "sum": "vzHAzFgkPo2hg4JJZb4dULQiFzhrqc3W2QUOHLSVQ9Q="
+      "version": "d68f9a6e0b1af7c4c4056dc2b43fb8f3bac01f43",
+      "sum": "N1Uz6AJpnQXv4w8F6lxDqMwoT7azPVrpuhJ4N7Oqzcw="
     },
     {
       "source": {
@@ -138,7 +138,7 @@
           "subdir": "nginx-directory"
         }
       },
-      "version": "f8d8de549ca3101b713fdf126b25716a271aeb7f",
+      "version": "d68f9a6e0b1af7c4c4056dc2b43fb8f3bac01f43",
       "sum": "s9iRscc25pLdoZUbiUBJ5c9hBOjCJ0ZUN27sXYq2E9w="
     },
     {
@@ -148,7 +148,7 @@
           "subdir": "node-exporter"
         }
       },
-      "version": "f8d8de549ca3101b713fdf126b25716a271aeb7f",
+      "version": "d68f9a6e0b1af7c4c4056dc2b43fb8f3bac01f43",
       "sum": "NrtW3s48yfeG97d6ULNSb1AzbslsRcf1olUsdwNt3JM="
     },
     {
@@ -158,7 +158,7 @@
           "subdir": "oauth2-proxy"
         }
       },
-      "version": "f8d8de549ca3101b713fdf126b25716a271aeb7f",
+      "version": "d68f9a6e0b1af7c4c4056dc2b43fb8f3bac01f43",
       "sum": "e4coY8Ht3lDdqfcrjHyFG1pAWbHdoJs5+hXTW/nLOVo="
     },
     {
@@ -168,7 +168,7 @@
           "subdir": "prometheus"
         }
       },
-      "version": "f8d8de549ca3101b713fdf126b25716a271aeb7f",
+      "version": "d68f9a6e0b1af7c4c4056dc2b43fb8f3bac01f43",
       "sum": "n5hfvTzxTTAJxRZDIaldGjxJmcfx1mF0JkojWZrlxG8="
     },
     {
@@ -178,8 +178,8 @@
           "subdir": "prometheus-ksonnet"
         }
       },
-      "version": "f8d8de549ca3101b713fdf126b25716a271aeb7f",
-      "sum": "VjPb3y6/0Xskbad/Om4zN9vg76uBDOKziAbaxWyKQaA="
+      "version": "d68f9a6e0b1af7c4c4056dc2b43fb8f3bac01f43",
+      "sum": "StSi7ZolISLE+KXrpYB7EUM15LY8kKrBpKVIAvf3CTc="
     },
     {
       "source": {
@@ -188,8 +188,8 @@
           "subdir": "tanka-util"
         }
       },
-      "version": "f8d8de549ca3101b713fdf126b25716a271aeb7f",
-      "sum": "0aINkSeurN5R+j4Vu2AQSEAmixMOZKWkzqkRCThu6zI="
+      "version": "d68f9a6e0b1af7c4c4056dc2b43fb8f3bac01f43",
+      "sum": "ShSIissXdvCy1izTCDZX6tY7qxCoepE5L+WJ52Hw7ZQ="
     },
     {
       "source": {
@@ -198,8 +198,8 @@
           "subdir": "traefik-mixin"
         }
       },
-      "version": "f8d8de549ca3101b713fdf126b25716a271aeb7f",
-      "sum": "zc5sREPD0+AEQa55qvlaZzsLKDwCg0kim67aKXJ8bHA="
+      "version": "d68f9a6e0b1af7c4c4056dc2b43fb8f3bac01f43",
+      "sum": "q9Iib4z5PYfTUBfk+BbwWWrToGqmNyHUZt7Oq5vM3+g="
     },
     {
       "source": {
