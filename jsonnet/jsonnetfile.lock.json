@@ -208,7 +208,7 @@
           "subdir": "production/ksonnet/promtail"
         }
       },
-      "version": "a1e75da9707d4fe5bacf5d3aea947225c5781d09",
+      "version": "0f139e2cb35daa9e56f8e0bbdaca472dbf802201",
       "sum": "UZBpdjIDu7x0UG1uRp9L2+ewqBNVrwJNq6FaA0wnYRY="
     },
     {
@@ -238,8 +238,8 @@
           "subdir": "doc-util"
         }
       },
-      "version": "be066653f33fcaa8467231f6334f6878b92fd8f9",
-      "sum": "fzESn29CRKzLap9jTpcUNSNBy7MzvzOxZo1LYWyIrGs="
+      "version": "e7f3020f5733ac3dd0a1998f49591a5afd24948d",
+      "sum": "YGiXub+RVwXffay0ejuoFXjkf13dinl5nD61DcpJHpc="
     },
     {
       "source": {

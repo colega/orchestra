@@ -33,6 +33,12 @@
     |||,
   },
 
+  joinPathPrefixes(prefixes, sep='/')::
+    std.join(sep, prefixes)
+    + (if std.length(prefixes) > 0
+       then sep
+       else ''),
+
   joinPrefixes(prefixes, sep='.')::
     std.join(sep, prefixes)
     + (if std.length(prefixes) > 0
@@ -102,10 +108,16 @@
         ]) + '\n\n'
       else ''
     )
-    + (root.templates.index % root.index(package.sections))
-    + '\n## Fields\n\n'
-    + root.renderValues(package.values)
-    + root.renderSections(package.sections),
+    + (if std.length(package.sections) > 0
+       then (root.templates.index % root.index(package.sections))
+       else '')
+    + (if std.length(package.values) > 0
+          || std.length(package.sections) > 0
+       then
+         '\n## Fields\n\n'
+         + root.renderValues(package.values)
+         + root.renderSections(package.sections)
+       else ''),
 
   index(sections, depth=0, prefixes=[])::
     std.join('\n', [
@@ -244,11 +256,20 @@
           (depth == 0)
         )
 
+
         // Field definition
         else if std.startsWith(key, '#')
         then (
           local realKey = key[1:];
-          if 'value' in obj[key]
+
+          if !std.isObject(obj[key])
+          then
+            std.trace(
+              'INFO: docstring "%s" cannot be parsed, ignored while rendering.' % key,
+              {}
+            )
+
+          else if 'value' in obj[key]
           then {
             values+: [root.sections.value(
               key,
@@ -272,7 +293,11 @@
               depth
             )],
           }
-          else {}
+          else
+            std.trace(
+              'INFO: docstring "%s" cannot be parsed, ignored while rendering.' % key,
+              {}
+            )
         )
 
         // subPackage definition
@@ -326,14 +351,14 @@
       if std.length(prefixes) > 0
       then package.name + '.md'
       else 'README.md';
-    local path = root.joinPrefixes(prefixes, '/');
+    local path = root.joinPathPrefixes(prefixes);
     {
       [path + key]: root.renderPackage(package),
     }
     + (
       if std.length(package.subPackages) > 0
       then {
-        [package.name + '/index.md']: root.renderIndexPage(package, prefixes),
+        [path + package.name + '/index.md']: root.renderIndexPage(package, prefixes),
       }
       else {}
     )
