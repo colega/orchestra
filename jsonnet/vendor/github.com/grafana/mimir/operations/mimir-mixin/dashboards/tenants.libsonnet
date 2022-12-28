@@ -523,12 +523,59 @@ local filename = 'mimir-tenants.json';
       .addPanel(
         local title = 'Failed notifications rate';
         $.panel(title) +
-        $.queryPanel(
+        $.failurePanel(
           'sum(rate(cortex_prometheus_notifications_errors_total{%(job)s, user="$user"}[$__rate_interval]))'
           % { job: $.jobMatcher($._config.job_names.ruler) },
           'rate',
         ) +
         { legend: { show: false } },
+      )
+    )
+
+    .addRow(
+      $.row('Read Path - Queries (User)')
+      .addPanel(
+        local title = 'Rate of Read Requests - query-frontend';
+        $.panel(title) +
+        $.queryPanel(
+          'sum(rate(cortex_query_frontend_queries_total{%s, container="query-frontend", user="$user"}[$__rate_interval]))' % $.namespaceMatcher(),
+          'Queries / Sec'
+        )
+      )
+      .addPanel(
+        local title = 'Number of Queries Queued - query-scheduler';
+        $.panel(title) +
+        $.queryPanel(
+          [
+            'sum(cortex_query_scheduler_queue_length{%s, container="query-scheduler", user="$user"})' % $.namespaceMatcher(),
+          ],
+          [
+            'Queue Length',
+          ],
+        )
+      )
+    )
+    .addRow(
+      $.row('Read Path - Queries (Ruler)')
+      .addPanel(
+        local title = 'Rate of Read Requests - ruler-query-frontend';
+        $.panel(title) +
+        $.queryPanel(
+          'sum(rate(cortex_query_frontend_queries_total{%s, container="ruler-query-frontend", user="$user"}[$__rate_interval]))' % $.namespaceMatcher(),
+          'Queries / Sec'
+        )
+      )
+      .addPanel(
+        local title = 'Number of Queries Queued - ruler-query-scheduler';
+        $.panel(title) +
+        $.queryPanel(
+          [
+            'sum(cortex_query_scheduler_queue_length{%s, container="ruler-query-scheduler", user="$user"})' % $.namespaceMatcher(),
+          ],
+          [
+            'Queue Length',
+          ],
+        )
       )
     ),
 }

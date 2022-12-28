@@ -15,6 +15,7 @@
 (import 'query-scheduler.libsonnet') +
 (import 'compactor.libsonnet') +
 (import 'store-gateway.libsonnet') +
+(import 'overrides-exporter.libsonnet') +
 
 // Supporting services
 (import 'etcd.libsonnet') +
@@ -24,9 +25,12 @@
 (import 'shuffle-sharding.libsonnet') +
 (import 'query-sharding.libsonnet') +
 (import 'multi-zone.libsonnet') +
+(import 'ruler-remote-evaluation.libsonnet') +
 (import 'memberlist.libsonnet') +
 (import 'continuous-test.libsonnet') +
-(import 'ruler-remote-evaluation.libsonnet') +
 
-// Import autoscaling at the end because it overrides deployments.
-(import 'autoscaling.libsonnet')
+// Import autoscaling after other features because it overrides deployments.
+(import 'autoscaling.libsonnet') +
+
+// Read-write deployment mode.
+(import 'read-write-deployment/main.libsonnet')

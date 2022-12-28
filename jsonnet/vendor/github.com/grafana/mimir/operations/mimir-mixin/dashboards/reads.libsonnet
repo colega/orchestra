@@ -68,18 +68,7 @@ local filename = 'mimir-reads.json';
       )
       .addPanel(
         $.panel('Range queries / sec') +
-        $.statPanel(|||
-          sum(
-            rate(
-              cortex_request_duration_seconds_count{
-                %(queryFrontend)s,
-                route=~"(prometheus|api_prom)_api_v1_query_range"
-              }[$__rate_interval]
-            )
-          )
-        ||| % {
-          queryFrontend: $.jobMatcher($._config.job_names.query_frontend),
-        }, format='reqps') +
+        $.statPanel($.queries.query_frontend.rangeQueriesPerSecond, format='reqps') +
         $.panelDescription(
           'Range queries per second',
           |||
@@ -90,18 +79,7 @@ local filename = 'mimir-reads.json';
       )
       .addPanel(
         $.panel('Label queries / sec') +
-        $.statPanel(|||
-          sum(
-            rate(
-              cortex_request_duration_seconds_count{
-                %(queryFrontend)s,
-                route=~"(prometheus|api_prom)_api_v1_label.*"
-              }[$__rate_interval]
-            )
-          )
-        ||| % {
-          queryFrontend: $.jobMatcher($._config.job_names.query_frontend),
-        }, format='reqps') +
+        $.statPanel($.queries.query_frontend.labelQueriesPerSecond, format='reqps') +
         $.panelDescription(
           'Label queries per second',
           |||
@@ -112,18 +90,7 @@ local filename = 'mimir-reads.json';
       )
       .addPanel(
         $.panel('Series queries / sec') +
-        $.statPanel(|||
-          sum(
-            rate(
-              cortex_request_duration_seconds_count{
-                %(queryFrontend)s,
-                route=~"(prometheus|api_prom)_api_v1_series"
-              }[$__rate_interval]
-            )
-          )
-        ||| % {
-          queryFrontend: $.jobMatcher($._config.job_names.query_frontend),
-        }, format='reqps') +
+        $.statPanel($.queries.query_frontend.seriesQueriesPerSecond, format='reqps') +
         $.panelDescription(
           'Series queries per second',
           |||
@@ -138,7 +105,7 @@ local filename = 'mimir-reads.json';
       $.row('Gateway')
       .addPanel(
         $.panel('Requests / sec') +
-        $.qpsPanel('cortex_request_duration_seconds_count{%s, route=~"%s"}' % [$.jobMatcher($._config.job_names.gateway), $.queries.read_http_routes_regex])
+        $.qpsPanel($.queries.gateway.readRequestsPerSecond)
       )
       .addPanel(
         $.panel('Latency') +
@@ -155,7 +122,7 @@ local filename = 'mimir-reads.json';
       $.row('Query-frontend')
       .addPanel(
         $.panel('Requests / sec') +
-        $.qpsPanel('cortex_request_duration_seconds_count{%s, route=~"%s"}' % [$.jobMatcher($._config.job_names.query_frontend), $.queries.read_http_routes_regex])
+        $.qpsPanel($.queries.query_frontend.readRequestsPerSecond)
       )
       .addPanel(
         $.panel('Latency') +
@@ -238,16 +205,16 @@ local filename = 'mimir-reads.json';
       )
     )
     .addRowIf(
-      $._config.autoscaling.querier_enabled,
+      $._config.autoscaling.querier.enabled,
       $.row('Querier - autoscaling')
       .addPanel(
         local title = 'Replicas';
         $.panel(title) +
         $.queryPanel(
           [
-            'kube_horizontalpodautoscaler_spec_min_replicas{%s, horizontalpodautoscaler="%s"}' % [$.namespaceMatcher(), $._config.autoscaling.querier_hpa_name],
-            'kube_horizontalpodautoscaler_spec_max_replicas{%s, horizontalpodautoscaler="%s"}' % [$.namespaceMatcher(), $._config.autoscaling.querier_hpa_name],
-            'kube_horizontalpodautoscaler_status_current_replicas{%s, horizontalpodautoscaler="%s"}' % [$.namespaceMatcher(), $._config.autoscaling.querier_hpa_name],
+            'kube_horizontalpodautoscaler_spec_min_replicas{%s, horizontalpodautoscaler="%s"}' % [$.namespaceMatcher(), $._config.autoscaling.querier.hpa_name],
+            'kube_horizontalpodautoscaler_spec_max_replicas{%s, horizontalpodautoscaler="%s"}' % [$.namespaceMatcher(), $._config.autoscaling.querier.hpa_name],
+            'kube_horizontalpodautoscaler_status_current_replicas{%s, horizontalpodautoscaler="%s"}' % [$.namespaceMatcher(), $._config.autoscaling.querier.hpa_name],
           ],
           [
             'Min',
@@ -267,8 +234,8 @@ local filename = 'mimir-reads.json';
         $.panel(title) +
         $.queryPanel(
           [
-            $.filterKedaMetricByHPA('keda_metrics_adapter_scaler_metrics_value', $._config.autoscaling.querier_hpa_name),
-            'kube_horizontalpodautoscaler_spec_target_metric{%s, horizontalpodautoscaler="%s"}' % [$.namespaceMatcher(), $._config.autoscaling.querier_hpa_name],
+            $.filterKedaMetricByHPA('keda_metrics_adapter_scaler_metrics_value', $._config.autoscaling.querier.hpa_name),
+            'kube_horizontalpodautoscaler_spec_target_metric{%s, horizontalpodautoscaler="%s"}' % [$.namespaceMatcher(), $._config.autoscaling.querier.hpa_name],
           ], [
             'Scaling metric',
             'Target per replica',
@@ -287,8 +254,8 @@ local filename = 'mimir-reads.json';
         local title = 'Autoscaler failures rate';
         $.panel(title) +
         $.queryPanel(
-          $.filterKedaMetricByHPA('sum by(metric) (rate(keda_metrics_adapter_scaler_errors[$__rate_interval]))', $._config.autoscaling.querier_hpa_name),
-          'Failures per second'
+          $.filterKedaMetricByHPA('sum by(metric) (rate(keda_metrics_adapter_scaler_errors[$__rate_interval]))', $._config.autoscaling.querier.hpa_name),
+          '{{metric}} failures'
         ) +
         $.panelDescription(
           title,

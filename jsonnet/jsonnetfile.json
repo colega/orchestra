@@ -62,7 +62,7 @@
           "subdir": "operations/mimir"
         }
       },
-      "version": "main"
+      "version": "mimir-2.5.0"
     },
     {
       "source": {
@@ -71,7 +71,7 @@
           "subdir": "operations/mimir-mixin"
         }
       },
-      "version": "main"
+      "version": "mimir-2.5.0"
     },
     {
       "source": {
