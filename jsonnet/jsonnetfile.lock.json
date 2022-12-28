@@ -268,7 +268,7 @@
           "subdir": "doc/alertmanager-mixin"
         }
       },
-      "version": "b1438ccd404063fc6428881120c6209aa0538fad",
+      "version": "87ad8437fc1e28280e8c5c5fdcb41e0a8904a855",
       "sum": "PsK+V7oETCPKu2gLoPfqY0wwPKH9TzhNj6o2xezjjXc="
     },
     {
@@ -278,8 +278,8 @@
           "subdir": "docs/node-mixin"
         }
       },
-      "version": "f06eb4152df8090b3a81d4f373744e13f245b3aa",
-      "sum": "wg4nWFJ6HqiiDdmyAu0cv8TZGXJh//JHsQ6sxnGusRY="
+      "version": "4484f185663b2808f8a40b5a992711d5277334de",
+      "sum": "TwdaTm0Z++diiLyaKAAimmC6hBL7XbrJc0RHhBCpAdU="
     },
     {
       "source": {
@@ -288,8 +288,8 @@
           "subdir": "documentation/prometheus-mixin"
         }
       },
-      "version": "b8af4632be96081f60d280971d7ddc298d27a006",
-      "sum": "crD6rsagAMJFnVRw4pO63z3LLYfz4QFIiMR14zjjIfY="
+      "version": "49f775d8a0d76532fae36c0392d929bbf110577a",
+      "sum": "LRx0tbMnoE1p8KEn+i81j2YsA5Sgt3itE5Y6jBf5eOQ="
     },
     {
       "source": {
