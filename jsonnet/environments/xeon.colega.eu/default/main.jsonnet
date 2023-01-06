@@ -53,6 +53,9 @@ local grafana_cloud_o11y = import 'grafana_cloud_o11y.libsonnet';
         prometheus_limits_memory: '512Mi',
       },
       prometheus_pvc+:: pvc.mixin.spec.resources.withRequests({ storage: '32Gi' }),
+
+      // For some reason the rules from the mixins are not propagated to prometheus, so we need to propagate them manually.
+      prometheusRules+:: mimir_mixin.prometheusRules,
     },
 
     prometheus_config+: {
