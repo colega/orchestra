@@ -1,5 +1,10 @@
 local k = import 'github.com/grafana/jsonnet-libs/ksonnet-util/kausal.libsonnet',
+      configMap = k.core.v1.configMap,
       pvc = k.core.v1.persistentVolumeClaim,
+      statefulSet = k.apps.v1.statefulSet,
+      container = k.core.v1.container,
+      volume = k.core.v1.volume,
+      volumeMount = k.core.v1.volumeMount,
       secret = k.core.v1.secret;
 
 local mimir_mixin = import 'github.com/grafana/mimir/operations/mimir-mixin/mixin.libsonnet';
@@ -28,7 +33,19 @@ local grafana_cloud_o11y = import 'grafana_cloud_o11y.libsonnet';
     // Increase the default 200m to avoid cpu throttling alert.
     node_exporter_container+:: k.util.resourcesLimits('500m', '100Mi'),
 
+    local mimirWritesDefaultPassword = 'mimir-writes-default-password',
+
+    default_mimir_writes_password_secret:
+      secret.new(mimirWritesDefaultPassword, { [mimirWritesDefaultPassword]: std.base64(importstr 'mimir-writes-default.secret.password.txt') }, 'Opaque'),
+
     prometheus+: {
+      prometheus_container+:: container.withVolumeMountsMixin([
+        volumeMount.new(mimirWritesDefaultPassword, '/mimir-auth'),
+      ]),
+      prometheus_statefulset+:
+        statefulSet.mixin.spec.template.spec.withVolumesMixin([
+          volume.fromSecret(mimirWritesDefaultPassword, mimirWritesDefaultPassword),
+        ]),
       _config+: {
         prometheus_requests_cpu: '250m',
         prometheus_requests_memory: '256Mi',
@@ -39,6 +56,12 @@ local grafana_cloud_o11y = import 'grafana_cloud_o11y.libsonnet';
     },
 
     prometheus_config+: {
+      remote_write: [
+        {
+          basic_auth: { username: 'default', password_file: '/mimir-auth/' + mimirWritesDefaultPassword },
+          url: 'https://mimir-writes.colega.eu/api/v1/push',
+        },
+      ],
       scrape_configs: [
         config {
           relabel_configs+:
@@ -52,6 +75,22 @@ local grafana_cloud_o11y = import 'grafana_cloud_o11y.libsonnet';
         }
         for config in super.scrape_configs
       ],
+    },
+
+    local mimirReadsDefaultPassword = 'mimir-reads-default-password',
+
+    default_mimir_reads_password_secret:
+      secret.new(mimirReadsDefaultPassword, { [mimirReadsDefaultPassword]: std.base64(importstr 'mimir-reads-default.secret.password.txt') }, 'Opaque'),
+    grafana_container+:: container.withEnvMixin([
+      k.core.v1.envVar.fromSecretRef(
+        'MIMIR_READS_DEFAULT_PASSWORD',
+        mimirReadsDefaultPassword,
+        mimirReadsDefaultPassword,
+      ),
+    ]),
+
+    grafanaDatasources+:: {
+      'mimir-default': $.prometheus.grafana_datasource_with_basicauth('default@mimir', 'https://mimir-reads.colega.eu/prometheus', 'default', '$MIMIR_READS_DEFAULT_PASSWORD', false, 'POST'),
     },
 
     mixins+:: {
