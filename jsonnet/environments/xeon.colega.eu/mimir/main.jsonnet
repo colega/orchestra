@@ -22,12 +22,4 @@ mimir + scaling + credentials + ring + ingress + json_write_proxy {
     store_gateway_data_disk_class: 'local-path',  // k3s magic provisioned by rancher.io/local-path
     store_gateway_data_disk_size: '8Gi',
   },
-
-  // See: https://github.com/grafana/mimir/issues/3824
-  querier_args+:: {
-    'server.http-write-timeout': '2m',
-  },
-  query_frontend_args+:: {
-    'server.http-write-timeout': '2m',
-  },
 }
