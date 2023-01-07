@@ -31,6 +31,9 @@ local middleware = import 'traefik/middleware.libsonnet';
 
   grafana:
     grafana {
+      _images+: {
+        grafana: 'grafana/grafana:9.3.1',
+      },
       grafana_container+:: {
         env+: [
           k.core.v1.envVar.fromSecretRef('ADMIN_PASSWORD', $._config.grafana_admin_password_secret_name, 'password'),

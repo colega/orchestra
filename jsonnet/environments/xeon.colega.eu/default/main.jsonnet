@@ -30,6 +30,9 @@ local grafana_cloud_o11y = import 'grafana_cloud_o11y.libsonnet';
     _config+:: $._config {
       grafana_root_url: 'https://grafana.xeon.colega.eu',
     },
+    _images+: {
+      grafana: 'grafana/grafana:9.3.1',
+    },
     // Increase the default 200m to avoid cpu throttling alert.
     node_exporter_container+:: k.util.resourcesLimits('500m', '100Mi'),
 
