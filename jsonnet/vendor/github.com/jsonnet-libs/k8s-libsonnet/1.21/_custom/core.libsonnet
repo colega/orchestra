@@ -39,26 +39,13 @@ local d = import 'doc-util/main.libsonnet';
             for envvar in env
           ]),
 
-        '#withEnvMap': d.fn(|||
-
-            `withEnvMap` works like `withEnvMixin` but accepts a key/value map,
-            this map is converted a list of core.v1.envVar(key, value)`.
-
-            If the value is an object instead of a string, it is placed under
-            the `valueFrom` key.
-
-          |||,
+        '#withEnvMap': d.fn(
+          '`withEnvMap` works like `withEnvMixin` but accepts a key/value map, this map is converted a list of core.v1.envVar(key, value)`',
           [d.arg('env', d.T.object)]
         ),
         withEnvMap(env)::
           self.withEnvMixin([
-            (
-              if std.type(env[k]) == 'object' then
-                $.core.v1.envVar.withName(k) +
-                { valueFrom: env[k] }
-              else
-                $.core.v1.envVar.new(k, env[k])
-            )
+            $.core.v1.envVar.new(k, env[k])
             for k in std.objectFields(env)
           ]),
 
