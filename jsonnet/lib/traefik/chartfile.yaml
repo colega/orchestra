@@ -6,5 +6,5 @@ repositories:
   url: https://helm.traefik.io/traefik
 requires:
 - chart: traefik/traefik
-  version: 10.9.1
+  version: 20.8.0
 version: 1
