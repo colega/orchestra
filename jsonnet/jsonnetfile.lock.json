@@ -254,6 +254,16 @@
     {
       "source": {
         "git": {
+          "remote": "https://github.com/jsonnet-libs/k8s-libsonnet.git",
+          "subdir": "1.24"
+        }
+      },
+      "version": "85543e49238903ac14b486321bd3d60fef09d9ef",
+      "sum": "qJK1nFZIYKv/ttM1bZxqXJJ7AIp9UA7ytVZpC6yQYoA="
+    },
+    {
+      "source": {
+        "git": {
           "remote": "https://github.com/kubernetes-monitoring/kubernetes-mixin.git",
           "subdir": ""
         }

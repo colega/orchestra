@@ -125,4 +125,12 @@ local grafana_cloud_o11y = import 'grafana_cloud_o11y.libsonnet';
     _images+:: $._images,
     _config+:: $._config,
   },
+
+
+  service_accounts+: {
+    [name]: {
+      service_account: k.core.v1.serviceAccount.new(name),
+    }
+    for name in import 'users/users.libsonnet'
+  },
 }
