@@ -86,6 +86,7 @@ local middleware = import 'traefik/middleware.libsonnet';
 
   prometheus: prometheus {
     _config+:: {
+      name: 'prometheus-%s' % $._config.namespace,
       namespace: $._config.namespace,
       prometheus_requests_cpu: '100m',
       prometheus_requests_memory: '128Mi',

@@ -127,10 +127,32 @@ local grafana_cloud_o11y = import 'grafana_cloud_o11y.libsonnet';
   },
 
 
-  service_accounts+: {
+  local clusterRole = k.rbac.v1.clusterRole,
+  local policyRule = k.rbac.v1.policyRule,
+  admin_cluster_role:
+    clusterRole.new('admin-role') +
+    clusterRole.withRulesMixin([
+      policyRule.withApiGroups('*') +
+      policyRule.withResources(['*']) +
+      policyRule.withVerbs(['*']),
+    ]),
+
+  admin_service_accounts+: {
     [name]: {
-      service_account: k.core.v1.serviceAccount.new(name),
+      local clusterRoleBinding = k.rbac.v1.clusterRoleBinding,
+      local resourceName = 'account-%s' % name,
+      service_account: k.core.v1.serviceAccount.new(resourceName),
+      cluster_role_binding:
+        clusterRoleBinding.new(resourceName) +
+        clusterRoleBinding.mixin.roleRef.withApiGroup('rbac.authorization.k8s.io') +
+        clusterRoleBinding.mixin.roleRef.withKind('ClusterRole') +
+        clusterRoleBinding.mixin.roleRef.withName(resourceName) +
+        clusterRoleBinding.withSubjectsMixin({
+          kind: 'ServiceAccount',
+          name: resourceName,
+          namespace: $._config.namespace,
+        }),
     }
-    for name in import 'users/users.libsonnet'
+    for name in import 'users/admins.libsonnet'
   },
 }

@@ -57,7 +57,7 @@
 
     // GCS authentication can be configured by setting a non-null service account value, which will be then rendered
     // as a CLI flag. Please note that there are alternative ways of configuring GCS authentication:
-    // See https://grafana.com/docs/mimir/latest/operators-guide/configure/reference-configuration-parameters/#gcs_storage_backend
+    // See https://grafana.com/docs/mimir/latest/reference-configuration-parameters/#gcs_storage_backend
     // See https://cloud.google.com/storage/docs/authentication#libauth
     storage_gcs_service_account: null,
 
@@ -180,7 +180,7 @@
       // splitting in the frontend, the reality is this only limits rate(foo[32d])
       // type queries. 32 days to allow for comparision over the last month (31d) and
       // then some.
-      'store.max-query-length': '768h',
+      'querier.max-partial-query-length': '768h',
     } + $.mimirRuntimeConfigFile,
 
     // PromQL query engine config (shared between all services running PromQL engine, like the ruler and querier).
@@ -217,6 +217,18 @@
         {}
       else
         querySchedulerRingConfig,
+
+    overridesExporterRingConfig:
+      if !$._config.overrides_exporter_ring_enabled then
+        {}
+      else
+        {
+          'overrides-exporter.ring.enabled': true,
+          'overrides-exporter.ring.store': 'consul',
+          'overrides-exporter.ring.consul.hostname': 'consul.%s.svc.cluster.local:8500' % $._config.namespace,
+          'overrides-exporter.ring.prefix': '',
+          'overrides-exporter.ring.wait-stability-min-duration': '1m',
+        },
 
     ruler_enabled: false,
     ruler_storage_backend: $._config.storage_backend,
@@ -474,15 +486,10 @@
   },
 
   // Check configured deployment mode to ensure configuration is correct and consistent.
-  check_deployment_mode: if (
-    $._config.deployment_mode == 'microservices' ||
-    $._config.deployment_mode == 'read-write' ||
-    $._config.deployment_mode == 'migration'
-  ) then null else
-    error 'unsupported deployment mode "%s"' % $._config.deployment_mode,
-
-  check_deployment_mode_mutually_exclusive: if $._config.deployment_mode == 'migration' || ($._config.is_microservices_deployment_mode != $._config.is_read_write_deployment_mode) then null else
-    error 'do not explicitly set is_microservices_deployment_mode or is_read_write_deployment_mode, but use deployment_mode config option instead',
+  assert std.member(['microservices', 'read-write', 'migration'], $._config.deployment_mode)
+         : 'unsupported deployment mode "%s"' % $._config.deployment_mode,
+  assert $._config.deployment_mode == 'migration' || ($._config.is_microservices_deployment_mode != $._config.is_read_write_deployment_mode)
+         : 'do not explicitly set is_microservices_deployment_mode or is_read_write_deployment_mode, but use deployment_mode config option instead',
 
   local configMap = $.core.v1.configMap,
 
