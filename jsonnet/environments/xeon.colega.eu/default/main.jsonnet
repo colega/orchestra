@@ -146,7 +146,7 @@ local grafana_cloud_o11y = import 'grafana_cloud_o11y.libsonnet';
         clusterRoleBinding.new(resourceName) +
         clusterRoleBinding.mixin.roleRef.withApiGroup('rbac.authorization.k8s.io') +
         clusterRoleBinding.mixin.roleRef.withKind('ClusterRole') +
-        clusterRoleBinding.mixin.roleRef.withName(resourceName) +
+        clusterRoleBinding.mixin.roleRef.withName('admin-role') +
         clusterRoleBinding.withSubjectsMixin({
           kind: 'ServiceAccount',
           name: resourceName,
